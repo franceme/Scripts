@@ -1,0 +1,4 @@
+*.txt eol=lf
+.gitattributes eol=lf
+.gitignore eol=lf
+*.md eol=lf
