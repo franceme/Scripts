@@ -27,7 +27,7 @@ URL = f"https://github.com/{GH_NAME}/{NAME}"
 long_description = pathlib.Path(f"{here}/README.md").read_text(encoding='utf-8')
 REQUIRES_PYTHON = '>=3.8.0'
 RELEASE = "?"
-entry_point = f"{NAME}"
+entry_point = f"funbelt.{NAME}"
 VERSION = "0.0.0"
 
 
