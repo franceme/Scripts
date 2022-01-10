@@ -1,28 +1,29 @@
-import os, sys, json, pandas as pd, sqlite3, pwd, uuid, platform, re
+import os, sys, json, pandas as pd, sqlite3, pwd, uuid, platform, re, base64, string
 from datetime import datetime as timr
 from sqlite3 import connect
 from glob import glob
+import httplib2
+import six
+from six.moves.urllib.parse import urlencode
+if six.PY2:
+    from string import maketrans
+else:
+    maketrans = bytes.maketrans
+from difflib import SequenceMatcher
+
+from sqlalchemy import create_engine
+import pandas as pd
+import psutil
+from telegram import Update, ForceReply, Bot
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 def install_import(importname):
     os.system(f"{sys.executable} -m pip install {importname} --upgrade")
 
-try:
-    from sqlalchemy import create_engine
-    import pandas as pd
-    import psutil
-    from telegram import Update, ForceReply, Bot
-    from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-except:
-    install_import("sqlalchemy pandas xlsxwriter psutil python-telegram-bot")
-    from sqlalchemy import create_engine
-    import pandas as pd
-    import psutil
-    from telegram import Update, ForceReply, Bot
-    from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-
 percent = lambda x,y: ("{0:.2f}").format(100 * (x / float(y)))
 cur_time = str(timr.now().strftime('%Y_%m_%d-%H_%M'))
 rnd = lambda _input: f"{round(_input * 100)} %"
+similar = lambda x,y:SequenceMatcher(None, a, b).ratio()*100
 
 def clean_string(foil, perma:bool=False):
     valid_kar = lambda kar: (ord('0') <= ord(kar) and ord(kar) <= ord('9')) or (ord('A') <= ord(kar) and ord(kar) <= ord('z'))
@@ -30,6 +31,20 @@ def clean_string(foil, perma:bool=False):
         return ''.join([i for i in foil if valid_kar(i)])
     else:
         return foil.replace(' ', '\ ').replace('&','\&')
+
+def plant(plantuml_text, _type='png'):
+
+        base = f'''https://www.plantuml.com/plantuml/{_type}/'''
+
+        plantuml_alphabet = string.digits + string.ascii_uppercase + string.ascii_lowercase + '-_'
+        base64_alphabet   = string.ascii_uppercase + string.ascii_lowercase + string.digits + '+/'
+        b64_to_plantuml = maketrans(base64_alphabet.encode('utf-8'), plantuml_alphabet.encode('utf-8'))
+
+        """zlib compress the plantuml text and encode it for the plantuml server.
+        """
+        zlibbed_str = compress(plantuml_text.encode('utf-8'))
+        compressed_string = zlibbed_str[2:-4]
+        return base+base64.b64encode(compressed_string).translate(b64_to_plantuml).decode('utf-8')    
 
 def run(cmd):
     try:
