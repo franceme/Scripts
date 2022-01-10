@@ -58,7 +58,7 @@ def from_nan(val):
     else:
         return str(val)
 
-def _int(val, return_val=None, return_self:bool=False):
+def to_int(val, return_val=None, return_self:bool=False):
     if from_nan(val) is None:
         return val if return_self else return_val
     elif isinstance(val, (int,float,complex)) or str(val).isdigit():
@@ -76,7 +76,7 @@ def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch
         print(f"{file_name} does not exist.")
         return None
 
-    to_int = _int(line_number)
+    to_int = to_int(line_number)
     if file_name.strip() != "" and to_int:
         file_name,line_number = str(file_name),to_int
         try:
