@@ -18,7 +18,7 @@ except:
 # region Basic Information
 here = os.path.abspath(os.path.dirname(__file__))
 py_version = sys.version_info[:2]
-NAME = "GeneralUtils"
+NAME = "utilbelt"
 AUTHOR = 'Miles Frantz'
 EMAIL = 'frantzme@vt.edu'
 DESCRIPTION = 'My short description for my project.'
@@ -40,6 +40,8 @@ def selfArg(string):
 
 if selfArg('install'):
 	sys.exit(os.system('python3 -m pip install -e .'))
+elif selfArg('upload'):
+	sys.exit(os.system(f"{sys.executable} setup.py sdist && twine upload dist/*"))
 elif selfArg('genGit'):
 	with open('LICENSE', 'w+') as writer:
 		writer.write(f"""

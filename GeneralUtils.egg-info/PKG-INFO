@@ -1,0 +1,19 @@
+Metadata-Version: 2.1
+Name: GeneralUtils
+Version: 0.0.0
+Summary: My short description for my project.
+Home-page: https://github.com/franceme/GeneralUtils
+Author: Miles Frantz
+Author-email: frantzme@vt.edu
+License: UNKNOWN
+Description: # GeneralUtils by Miles Frantz
+        
+        ## Current Version: 0.0.0
+        
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Requires-Python: >=3.8.0
+Description-Content-Type: text/markdown
