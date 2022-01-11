@@ -226,6 +226,10 @@ class ThreadMgr(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         return self
     def __iadd__(self,obj):
+        while len([tread for tread in self.threads if tread.isalive()]) >= self.max_num_threads:
+            wait_for(self.time_to_wait,silent=True)
+
+        self.threads += [obj]
         return self
     def __call__(self, lymbda):
         current_thread = None
