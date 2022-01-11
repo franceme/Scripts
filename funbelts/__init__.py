@@ -192,10 +192,10 @@ class GRepo(object):
     with GRepo("https://github.com/owner/repo","v1","hash") as repo:
         os.path.exists(repo.reponame) #TRUE
     """
-    def __init__(self, repo:str, tag:str=None, commit:str=None,delete:bool=True):
+    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True):
         repo = repo.replace('http://','https://')
         self.url = repo
-        self.reponame = repo.split('/')[-1]
+        self.reponame = reponame
         self.commit = commit or None
         self.delete=delete
 

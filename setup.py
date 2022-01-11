@@ -28,8 +28,31 @@ long_description = pathlib.Path(f"{here}/README.md").read_text(encoding='utf-8')
 REQUIRES_PYTHON = '>=3.8.0'
 RELEASE = "?"
 entry_point = f"{NAME}.{NAME}"
-VERSION = "0.0.17"
+VERSION = "0.0.24"
 
+def grab_version(update_patch:bool=False,update_minor:bool=False,update_major:bool=False):
+	update = any([update_patch,update_minor,update_major])
+	with finput(__file__,inplace=True) as foil:
+		for line in foil:
+			if line.startswith("VERSION = "):
+				output = line.strip().replace('VERSION = ','').replace('"','').split('.')
+				major,minor,patch = int(output[0]),int(output[1]),int(output[2])
+
+				if update_patch:
+					patch += 1
+				if update_minor:
+					minor += 1
+				if update_major:
+					major += 1
+
+				if update:
+					print(f"VERSION = \"{major}.{minor}.{patch}\"")
+				else:
+					print(line,end='')
+
+			else:
+				print(line, end='')
+	return
 
 # endregion
 # region CMD Line Usage
@@ -41,6 +64,7 @@ def selfArg(string):
 if selfArg('install'):
 	sys.exit(os.system('python3 -m pip install -e .'))
 elif selfArg('upload'):
+	grab_version(True)
 	sys.exit(os.system(f"{sys.executable} setup.py sdist && {sys.executable} -m twine upload --skip-existing dist/*"))
 # endregion
 # region Setup
