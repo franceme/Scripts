@@ -218,26 +218,26 @@ class GRepo(object):
 
 class ThreadMgr(object):
     def __init__(self,max_num_threads:int=100,time_to_wait:int=10):
-		self.max_num_threads = max_num_threads
-		self.threads = []
+        self.max_num_threads = max_num_threads
+        self.threads = []
         self.time_to_wait = time_to_wait
-	def __enter__(self):
-		return self
-	def __exit__(self, exc_type, exc_val, exc_tb):
-		return self
-	def __threds(self):
-		self.threads.pop
-	def __call__(self, lymbda):
-		current_thread = None
+    def __enter__(self):
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        return self
+    def __threds(self):
+        self.threads.pop
+    def __call__(self, lymbda):
+        current_thread = None
 
-		while len([tread for tread in self.threads if tread.isalive()]) >= self.max_num_threads:
-			wait_for(self.time_to_wait,silent=True)
+        while len([tread for tread in self.threads if tread.isalive()]) >= self.max_num_threads:
+            wait_for(self.time_to_wait,silent=True)
 
-		current_thread = Thread(lymbda())
-		self.threads += [current_thread]
-		current_thread.start()
+        current_thread = Thread(lymbda())
+        self.threads += [current_thread]
+        current_thread.start()
 
-		return
+        return
 
 #https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
 def progressBar(iterable, prefix = 'Progress', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\n"):
