@@ -76,9 +76,9 @@ def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch
         print(f"{file_name} does not exist.")
         return None
 
-    to_int = to_int(line_number)
-    if file_name.strip() != "" and to_int:
-        file_name,line_number = str(file_name),to_int
+    int_num = to_int(line_number)
+    if file_name.strip() != "" and int_num:
+        file_name,line_number = str(file_name),int_num
         try:
             with open(file_name, 'r') as reader:
                 total_lines = reader.readlines()
@@ -141,14 +141,14 @@ class telegramBot(object):
         if msg.strip() == "":
             msg = "EMPTY"
         try:
-            tele_bot.send_message(self.chatID,msg)
+            self.bot.send_message(self.chatID,msg)
         except Exception as e:
             print(e)
             pass
     def upload(self,path:str):
         self.msg(f"Attempting to send file: {path}")
         if os.path.exists(path):
-            tele_bot.send_document(chat_id = self.chatID,document=open(path,'rb'))
+            self.bot.send_document(chat_id = self.chatID,document=open(path,'rb'))
             self.msg(f"File {path} has been uploaded")
         else:
             self.msg(f"File {path} does not exist")
@@ -182,6 +182,39 @@ class excelwriter(object):
     def add_frame(self,sheet_name,dataframe):
         self.__table_from_df(self.writer, sheet_name, dataframe)
         self.dataframes += [(dataframe, sheet_name)]
+
+class GRepo(object):
+    """
+    Sample usage:
+    with GRepo("https://github.com/owner/repo","v1","hash") as repo:
+        os.path.exists(repo.reponame) #TRUE
+    """
+    def __init__(self, repo, tag, commit,delete:bool=True):
+        repo = repo.replace('http://','https://')
+        self.url = repo
+        self.reponame = repo.split('/')[-1]
+        self.commit = commit or None
+        self.delete=delete
+
+        self.cloneurl = "git clone --depth 1"
+        if tag:
+            self.tag = tag
+            self.cloneurl += f" --branch {tag}"
+
+    def __enter__(self):
+        if not os.path.exists(self.reponame):
+            print(f"Waiting between scanning projects to ensure GitHub Doesn't get angry")
+            wait_for(5)
+            run(f"{self.cloneurl} {self.url}")
+
+            if self.commit:
+                run(f"cd {self.reponame} && git reset --hard {self.commit} && cd ../")
+
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.delete:
+            run(f"yes|rm -r {self.reponame}")
+        return self
 
 #https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
 def progressBar(iterable, prefix = 'Progress', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\n"):
@@ -253,4 +286,7 @@ def isMac():
 
 docker_base = 'docker' if isMac() else 'sudo docker'
 def mac_addr():
+    """
+    Return the mac address of the current computer
+    """
     return str(':'.join(re.findall('..', '%012x' % uuid.getnode())))
