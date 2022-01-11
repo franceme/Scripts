@@ -69,6 +69,9 @@ def to_int(val, return_val=None, return_self:bool=False):
         return int(complex(val))
     return val if return_self else return_val
 
+def real_str(string):
+    return (myString and myString.strip())
+
 def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch=lambda _:False) -> str:
     output = ""
 
@@ -189,7 +192,7 @@ class GRepo(object):
     with GRepo("https://github.com/owner/repo","v1","hash") as repo:
         os.path.exists(repo.reponame) #TRUE
     """
-    def __init__(self, repo, tag, commit,delete:bool=True):
+    def __init__(self, repo:str, tag:str=None, commit:str=None,delete:bool=True):
         repo = repo.replace('http://','https://')
         self.url = repo
         self.reponame = repo.split('/')[-1]
@@ -197,7 +200,7 @@ class GRepo(object):
         self.delete=delete
 
         self.cloneurl = "git clone --depth 1"
-        if tag:
+        if real_str(tag):
             self.tag = tag
             self.cloneurl += f" --branch {tag}"
 
@@ -207,7 +210,7 @@ class GRepo(object):
             wait_for(5)
             run(f"{self.cloneurl} {self.url}")
 
-            if self.commit:
+            if real_str(self.commit):
                 run(f"cd {self.reponame} && git reset --hard {self.commit} && cd ../")
 
         return self
