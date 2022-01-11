@@ -4,6 +4,7 @@ from sqlite3 import connect
 from glob import glob
 import httplib2
 import six
+from threading import Thread
 from six.moves.urllib.parse import urlencode
 if six.PY2:
     from string import maketrans
@@ -173,17 +174,13 @@ class excelwriter(object):
         self.writer = None
         return self
 
-    @staticmethod
-    def __table_from_df(writer, sheet_name, dataframe):
+    def add_frame(self,sheet_name,dataframe):
         #https://xlsxwriter.readthedocs.io/example_pandas_table.html
-        dataframe.to_excel(writer, sheet_name=sheet_name, startrow=1,header=False,index=False)
-        worksheet = writer.sheets[sheet_name]
+        dataframe.to_excel(self.writer, sheet_name=sheet_name, startrow=1,header=False,index=False)
+        worksheet = self.writer.sheets[sheet_name]
         (max_row, max_col) = dataframe.shape
         worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': [{'header': column} for column in dataframe.columns]})
         worksheet.set_column(0, max_col - 1, 12)
-
-    def add_frame(self,sheet_name,dataframe):
-        self.__table_from_df(self.writer, sheet_name, dataframe)
         self.dataframes += [(dataframe, sheet_name)]
 
 class GRepo(object):
@@ -219,6 +216,29 @@ class GRepo(object):
             run(f"yes|rm -r {self.reponame}")
         return self
 
+class ThreadMgr(object):
+    def __init__(self,max_num_threads:int=100,time_to_wait:int=10):
+		self.max_num_threads = max_num_threads
+		self.threads = []
+        self.time_to_wait = time_to_wait
+	def __enter__(self):
+		return self
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		return self
+	def __threds(self):
+		self.threads.pop
+	def __call__(self, lymbda):
+		current_thread = None
+
+		while len([tread for tread in self.threads if tread.isalive()]) >= self.max_num_threads:
+			wait_for(self.time_to_wait,silent=True)
+
+		current_thread = Thread(lymbda())
+		self.threads += [current_thread]
+		current_thread.start()
+
+		return
+
 #https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
 def progressBar(iterable, prefix = 'Progress', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\n"):
     """
@@ -248,11 +268,15 @@ def progressBar(iterable, prefix = 'Progress', suffix = 'Complete', decimals = 1
     # Print New Line on Complete
     print()
 
-def wait_for(time_num:int):
+def wait_for(time_num:int,silent:bool=False):
     import time as cur
     ranger = range(time_num)
-    for _ in progressBar(ranger,  prefix='Waiting',suffix="Complete",length=int(time_num)):
-        cur.sleep(1)
+    if not silent:
+        for _ in progressBar(ranger,  prefix='Waiting',suffix="Complete",length=int(time_num)):
+            cur.sleep(1)
+    else:
+        for _ in ranger:
+            cur.sleep(1)
     return
 
 def safe_get(obj, attr, default=None):
