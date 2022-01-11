@@ -225,8 +225,8 @@ class ThreadMgr(object):
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
         return self
-    def __threds(self):
-        self.threads.pop
+    def __iadd__(self,obj):
+        return self
     def __call__(self, lymbda):
         current_thread = None
 
