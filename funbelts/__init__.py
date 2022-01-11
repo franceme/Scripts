@@ -69,7 +69,7 @@ def to_int(val, return_val=None, return_self:bool=False):
         return int(complex(val))
     return val if return_self else return_val
 
-def real_str(string):
+def real_str(myString):
     return (myString and myString.strip())
 
 def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch=lambda _:False) -> str:
