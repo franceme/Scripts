@@ -232,16 +232,6 @@ class ThreadMgr(object):
 
         self.threads += [obj]
         return self
-    def __call__(self, lymbda):
-        current_thread = None
-
-        while len([tread for tread in self.threads if tread.isAlive()]) >= self.max_num_threads:
-            wait_for(self.time_to_wait,silent=True)
-
-        current_thread = Thread(lymbda())
-        self.threads += [current_thread]
-
-        return current_thread
 
 #https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
 def progressBar(iterable, prefix = 'Progress', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\n"):
