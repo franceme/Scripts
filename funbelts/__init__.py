@@ -227,7 +227,8 @@ class ThreadMgr(object):
         return self
     def __iadd__(self,obj):
         while len([tread for tread in self.threads if tread.isAlive()]) >= self.max_num_threads:
-            wait_for(self.time_to_wait,silent=True)
+            import time
+            time.sleep(self.time_to_wait)
 
         self.threads += [obj]
         return self
