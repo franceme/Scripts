@@ -70,7 +70,7 @@ def to_int(val, return_val=None, return_self:bool=False):
     return val if return_self else return_val
 
 def real_str(myString):
-    return (myString and myString.strip())
+    return (myString is not None and myString and myString.strip())
 
 def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch=lambda _:False) -> str:
     output = ""

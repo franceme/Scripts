@@ -28,7 +28,7 @@ long_description = pathlib.Path(f"{here}/README.md").read_text(encoding='utf-8')
 REQUIRES_PYTHON = '>=3.8.0'
 RELEASE = "?"
 entry_point = f"{NAME}.{NAME}"
-VERSION = "0.0.15"
+VERSION = "0.0.16"
 
 
 # endregion
