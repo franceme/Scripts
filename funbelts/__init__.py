@@ -235,9 +235,8 @@ class ThreadMgr(object):
 
         current_thread = Thread(lymbda())
         self.threads += [current_thread]
-        current_thread.start()
 
-        return
+        return current_thread
 
 #https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
 def progressBar(iterable, prefix = 'Progress', suffix = 'Complete', decimals = 1, length = 100, fill = '█', printEnd = "\n"):
