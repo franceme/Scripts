@@ -4,7 +4,7 @@ from sqlite3 import connect
 from glob import glob
 import httplib2
 import six
-from threading import Thread
+from threading import Thread, Lock
 from six.moves.urllib.parse import urlencode
 if six.PY2:
     from string import maketrans
@@ -136,26 +136,34 @@ class telegramBot(object):
     def __init__(self,botID:str,chatID:str):
         self.bot = Bot(botID)
         self.chatID = chatID
+        self.msg_lock = Lock()
+        self.upload_lock = Lock()
     def __enter__(self):
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.bot = None
         return self
     def msg(self,msg:str):
-        if msg.strip() == "":
-            msg = "EMPTY"
+        self.msg_lock.acquire()
         try:
-            self.bot.send_message(self.chatID,msg)
-        except Exception as e:
-            print(e)
-            pass
+            if msg.strip() == "":
+                msg = "EMPTY"
+            try:
+                self.bot.send_message(self.chatID,msg)
+            except Exception as e:
+                print(e)
+                pass
+        finally:
+            self.msg_lock.release()
     def upload(self,path:str):
-        self.msg(f"Attempting to send file: {path}")
-        if os.path.exists(path):
-            self.bot.send_document(chat_id = self.chatID,document=open(path,'rb'))
-            self.msg(f"File {path} has been uploaded")
-        else:
-            self.msg(f"File {path} does not exist")
+        self.upload_lock.acquire()
+        try:
+            if os.path.exists(path):
+                self.bot.send_document(chat_id = self.chatID,document=open(path,'rb'))
+                self.msg(f"File {path} has been uploaded")
+        finally:
+            self.upload_lock.release()
+
 
 class excelwriter(object):
     def __init__(self,filename):
