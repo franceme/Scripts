@@ -71,6 +71,7 @@ def to_int(val, return_val=None, return_self:bool=False):
     return val if return_self else return_val
 
 def is_not_empty(myString):
+    myString = str(myString)
     return (myString is not None and myString and myString.strip() and myString.strip().lower() not in ['nan','none'])
 
 def is_empty(myString):
