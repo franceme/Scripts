@@ -70,12 +70,14 @@ def to_int(val, return_val=None, return_self:bool=False):
         return int(complex(val))
     return val if return_self else return_val
 
-def wipe_all(exclude:list, starts_with:bool=False, exclude_hidden:bool=True, base_path:str = os.path.abspath(os.curdir) ):
+def wipe_all(exclude:list, starts_with:bool=False, exclude_hidden:bool=True, custom_matcher=None, base_path:str = os.path.abspath(os.curdir) ):
     for itym in os.listdir(base_path):
-        delete_foil = False
+        save_foil = False
 
         if starts_with:
             delete_foil = any([ itym.startswith(prefix) for prefix in exclude ])
+        elif custom_matcher:
+            delete = custom_matcher(itym)
         else:
             delete_foil = any([ itym == match for match in exclude ])
 
