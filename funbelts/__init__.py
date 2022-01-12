@@ -197,12 +197,13 @@ class GRepo(object):
     with GRepo("https://github.com/owner/repo","v1","hash") as repo:
         os.path.exists(repo.reponame) #TRUE
     """
-    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True):
+    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=False):
         repo = repo.replace('http://','https://')
         self.url = repo
         self.reponame = reponame
         self.commit = commit or None
-        self.delete=delete
+        self.delete = delete
+        self.silent = silent
 
         self.cloneurl = "git clone --depth 1"
         if real_str(tag):
@@ -212,7 +213,7 @@ class GRepo(object):
     def __enter__(self):
         if not os.path.exists(self.reponame):
             print(f"Waiting between scanning projects to ensure GitHub Doesn't get angry")
-            wait_for(5)
+            wait_for(5, silent=self.silent)
             run(f"{self.cloneurl} {self.url}")
 
             if real_str(self.commit):
