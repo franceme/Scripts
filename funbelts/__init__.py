@@ -70,6 +70,18 @@ def to_int(val, return_val=None, return_self:bool=False):
         return int(complex(val))
     return val if return_self else return_val
 
+def wipe_all(exclude:list, starts_with:bool=False, exclude_hidden:bool=True, base_path:str = os.path.abspath(os.curdir) ):
+    for itym in os.listdir(base_path):
+        delete_foil = False
+
+        if starts_with:
+            delete_foil = any([ itym.startswith(prefix) for prefix in exclude ])
+        else:
+            delete_foil = any([ itym == match for match in exclude ])
+
+        if (exclude or not itym.startswith(".")) and delete_foil:
+            run(f"yes|rm -r {itym}")
+
 def is_not_empty(myString):
     myString = str(myString)
     return (myString is not None and myString and myString.strip() and myString.strip().lower() not in ['nan','none'])
