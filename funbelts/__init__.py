@@ -70,8 +70,11 @@ def to_int(val, return_val=None, return_self:bool=False):
         return int(complex(val))
     return val if return_self else return_val
 
-def real_str(myString):
+def is_not_empty(myString):
     return (myString is not None and myString and myString.strip() and myString.strip().lower() not in ['nan','none'])
+
+def is_empty(myString):
+    return not is_not_empty(myString)
 
 def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch=lambda _:False) -> str:
     output = ""
@@ -206,7 +209,7 @@ class GRepo(object):
         self.silent = silent
 
         self.cloneurl = "git clone --depth 1"
-        if real_str(tag):
+        if is_not_empty(tag):
             self.tag = tag
             self.cloneurl += f" --branch {tag}"
 
@@ -216,7 +219,7 @@ class GRepo(object):
             wait_for(5, silent=self.silent)
             run(f"{self.cloneurl} {self.url}")
 
-            if real_str(self.commit):
+            if is_not_empty(self.commit):
                 run(f"cd {self.reponame} && git reset --hard {self.commit} && cd ../")
 
         return self
