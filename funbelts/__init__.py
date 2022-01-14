@@ -210,6 +210,9 @@ class excelwriter(object):
         self.dataframes += [(dataframe, sheet_name)]
 
 def append_to_excel(fpath, df, sheet_name):
+    """
+    https://stackoverflow.com/questions/47737220/append-dataframe-to-excel-with-pandas#answer-64824686
+    """
     with pd.ExcelWriter(fpath, mode="a",engine="openpyxl") as f:
         df.to_excel(f, sheet_name=sheet_name)
 
