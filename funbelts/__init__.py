@@ -209,6 +209,10 @@ class excelwriter(object):
         worksheet.set_column(0, max_col - 1, 12)
         self.dataframes += [(dataframe, sheet_name)]
 
+def append_to_excel(fpath, df, sheet_name):
+    with pd.ExcelWriter(fpath, mode="a",engine="openpyxl") as f:
+        df.to_excel(f, sheet_name=sheet_name)
+
 class GRepo(object):
     """
     Sample usage:
