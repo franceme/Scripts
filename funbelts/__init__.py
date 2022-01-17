@@ -118,6 +118,18 @@ def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch
             print(f"Exception: {e}")
     return output
 
+def get_line_from_context(line_num:int, context:str,_default=""):
+    try:
+        for line in row.context.split('\n'):
+            if int(line.split(' ')[0]) == line_num:
+                return line
+    except:
+        pass
+    return _default
+
+def get_lines_from_context(match:str, line_num:int, context:str,_default=""):
+    return match in get_line_from_context(line_num, context,_default) or match
+
 class SqliteConnect(object):
     """
     Sample usage:
