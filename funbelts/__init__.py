@@ -1,4 +1,4 @@
-import os, sys, json, pandas as pd, sqlite3, pwd, uuid, platform, re, base64, string
+import os, sys, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string
 from datetime import datetime as timr
 from sqlite3 import connect
 from glob import glob
@@ -17,6 +17,7 @@ import pandas as pd
 import psutil
 from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from github import Github
 
 def install_import(importname):
     os.system(f"{sys.executable} -m pip install {importname} --upgrade")
@@ -26,6 +27,11 @@ cur_time = str(timr.now().strftime('%Y_%m_%d-%H_%M'))
 rnd = lambda _input: f"{round(_input * 100)} %"
 similar = lambda x,y:SequenceMatcher(None, a, b).ratio()*100
 
+
+def cur_time_ms():
+    now = timr.now()
+    return now.strftime('%Y-%m-%dT%H:%M:%S') + ('.%04d' % (now.microsecond / 10000))
+
 def clean_string(foil, perma:bool=False):
     valid_kar = lambda kar: (ord('0') <= ord(kar) and ord(kar) <= ord('9')) or (ord('A') <= ord(kar) and ord(kar) <= ord('z'))
     if perma:
@@ -33,8 +39,43 @@ def clean_string(foil, perma:bool=False):
     else:
         return foil.replace(' ', '\ ').replace('&','\&')
 
-def plant(plantuml_text, _type='png'):
+def timeout(timeout=2 * 60 * 60):
+    from threading import Thread
+    import functools
 
+    def deco(func):
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            res = [
+                Exception('function [%s] timeout [%s seconds] exceeded!' %
+                          (func.__name__, timeout))
+            ]
+
+            def newFunc():
+                try:
+                    res[0] = func(*args, **kwargs)
+                except Exception as e:
+                    res[0] = e
+
+            t = Thread(target=newFunc)
+            t.daemon = True
+            try:
+                t.start()
+                t.join(timeout)
+            except Exception as je:
+                disp('error starting thread')
+                raise je
+            ret = res[0]
+            if isinstance(ret, BaseException):
+                raise ret
+            return ret
+
+        return wrapper
+
+    return deco
+
+def plant(plantuml_text, _type='png'):
         base = f'''https://www.plantuml.com/plantuml/{_type}/'''
 
         plantuml_alphabet = string.digits + string.ascii_uppercase + string.ascii_lowercase + '-_'
@@ -59,6 +100,13 @@ def from_nan(val):
     else:
         return str(val)
 
+def is_class(value, klass):
+    try:
+        klass(value)
+        return True
+    except:
+        return False
+
 def to_int(val, return_val=None, return_self:bool=False):
     if from_nan(val) is None:
         return val if return_self else return_val
@@ -69,6 +117,55 @@ def to_int(val, return_val=None, return_self:bool=False):
     elif is_class(val, complex):
         return int(complex(val))
     return val if return_self else return_val
+
+def zyp(A,B,output=np.NaN):
+    _a_one = not pd.isna(A)
+    _a_two = A != -1
+    _a_three = (not isinstance(A,str) or bool(A))
+    _a_four = (not isinstance(A,bool) or A)
+
+    _b_one = not pd.isna(B)
+    _b_two = B != -1
+    _b_three = (not isinstance(B,str) or bool(B))
+    _b_four = (not isinstance(B,bool) or B)
+
+    if _a_one and _a_two and _a_three and _a_four:
+        output = A
+    elif _b_one and _b_two and _b_three and _b_four:
+        output = B
+
+    return output
+
+def set_mito(mitofile:str="mitoprep.py"):
+    with open(mitofile,"w+") as writer:
+        writer.write("""#!/usr/bin/python3
+import os,sys,json,pwd
+
+prefix = "/home/"
+suffix = '/.mito/user.json'
+
+paths = [prefix + str(pwd.getpwuid(os.getuid())[0]) + suffix, prefix + 'runner' + suffix]
+
+for file_path in paths:
+    try:
+        with open(file_path, 'r') as reader:
+            contents = json.load(reader)
+
+        contents['user_email'] = 'test@test.com'
+        contents['feedbacks'] = [
+            {
+                'Where did you hear about Mito?': 'Demo Purposes',
+                'What is your main code editor for Python data analysis?': 'Demo Purposes'
+            }
+        ]
+        contents['mitosheet_telemetry'] = False
+
+        with open(file_path, 'w') as writer:
+            json.dump(contents, writer)
+    except:
+        pass
+""")
+    run(f"{sys.executable} {mitofile} && rm {mitofile}")
 
 def wipe_all(exclude:list, starts_with:bool=False, exclude_hidden:bool=True, custom_matcher=None, base_path:str = os.path.abspath(os.curdir) ):
     for itym in os.listdir(base_path):
@@ -154,7 +251,6 @@ class SqliteConnect(object):
         self.connection.close()
         return self
 
-
 class telegramBot(object):
     """
     Sample usage:
@@ -193,7 +289,6 @@ class telegramBot(object):
                 self.msg(f"File {path} has been uploaded")
         finally:
             self.upload_lock.release()
-
 
 class excelwriter(object):
     def __init__(self,filename):
@@ -234,13 +329,19 @@ class GRepo(object):
     with GRepo("https://github.com/owner/repo","v1","hash") as repo:
         os.path.exists(repo.reponame) #TRUE
     """
-    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=False):
+    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=False,write_statistics:bool=False):
         repo = repo.replace('http://','https://')
         self.url = repo
         self.reponame = reponame
         self.commit = commit or None
         self.delete = delete
         self.silent = silent
+        self.write_statistics = write_statistics
+        if self.write_statistics:
+            try:
+                self.GRepo = Github().get_repo(repo.replace("https://github.com/",""))
+            except:
+                pass
 
         self.cloneurl = "git clone --depth 1"
         if is_not_empty(tag):
@@ -260,10 +361,23 @@ class GRepo(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self.delete:
             run(f"yes|rm -r {self.reponame}")
+        if self.write_statistics:
+            foil_out = ".github_stats.csv"
+            make_header = not os.path.exists(foil_out)
+
+            with open(foil_out,"a+") as writer:
+                if header:
+                    writer.write("RepoName,RepoURL,RepoTopics,Stars\n")
+                writer.write(','.join( [self.GRepo.reponame,self.GRepo.url, ':'.join(list(self.GRepo.get_topics())),self.GRepo.stargazers_count] ) + "\n")
+
         return self
 
 class ThreadMgr(object):
     def __init__(self,max_num_threads:int=100,time_to_wait:int=10):
+        try:
+            import thread
+        except ImportError:
+            import _thread as thread
         self.max_num_threads = max_num_threads
         self.threads = []
         self.time_to_wait = time_to_wait
@@ -284,13 +398,13 @@ def progressBar(iterable, prefix = 'Progress', suffix = 'Complete', decimals = 1
     """
     Call in a loop to create terminal progress bar
     @params:
-    iterable	- Required  : iterable object (Iterable)
-        prefix	  - Optional  : prefix string (Str)
-        suffix	  - Optional  : suffix string (Str)
-        decimals	- Optional  : positive number of decimals in percent complete (Int)
-        length	  - Optional  : character length of bar (Int)
-        fill		- Optional  : bar fill character (Str)
-        printEnd	- Optional  : end character (e.g. "\r", "\r\n") (Str)
+    iterable    - Required  : iterable object (Iterable)
+        prefix      - Optional  : prefix string (Str)
+        suffix      - Optional  : suffix string (Str)
+        decimals    - Optional  : positive number of decimals in percent complete (Int)
+        length      - Optional  : character length of bar (Int)
+        fill        - Optional  : bar fill character (Str)
+        printEnd    - Optional  : end character (e.g. "\r", "\r\n") (Str)
     """
     total = len(iterable)
     # Progress Bar Printing Function
@@ -329,22 +443,22 @@ def get_system_info():
     return pd.DataFrame(
         [{
             "SystemInfo":f"OS",
-            "Value"	 :f"{platform.system()}"
+            "Value"     :f"{platform.system()}"
         },{
             "SystemInfo":f"VERSION",
-            "Value"	 :f"{platform.release()}"
+            "Value"     :f"{platform.release()}"
         },{
             "SystemInfo":f"CPU",
-            "Value"	 :f"{platform.machine()}"
+            "Value"     :f"{platform.machine()}"
         },{
             "SystemInfo":f"RAM",
-            "Value"	 :str(round(psutil.virtual_memory().total / (1024.0 **3)))+" GB"
+            "Value"     :str(round(psutil.virtual_memory().total / (1024.0 **3)))+" GB"
         },{
             "SystemInfo":f"RUNNING INSIDE DOCKER",
-            "Value"	 :f"{os.path.exists('/.dockerenv') or (os.path.isfile('/proc/self/cgroup') and any('docker' in line for line in open('/proc/self/cgroup')))}"
+            "Value"     :f"{os.path.exists('/.dockerenv') or (os.path.isfile('/proc/self/cgroup') and any('docker' in line for line in open('/proc/self/cgroup')))}"
         },{
             "SystemInfo":f"TIME RAN",
-            "Value"	 :cur_time
+            "Value"     :cur_time
         }],columns = ["SystemInfo","Value"]
     )
 
