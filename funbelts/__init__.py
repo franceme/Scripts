@@ -27,6 +27,7 @@ cur_time = str(timr.now().strftime('%Y_%m_%d-%H_%M'))
 rnd = lambda _input: f"{round(_input * 100)} %"
 similar = lambda x,y:SequenceMatcher(None, a, b).ratio()*100
 
+
 def cur_time_ms():
     now = timr.now()
     return now.strftime('%Y-%m-%dT%H:%M:%S') + ('.%04d' % (now.microsecond / 10000))
