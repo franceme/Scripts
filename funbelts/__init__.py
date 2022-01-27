@@ -341,7 +341,9 @@ class GRepo(object):
         if self.write_statistics:
             try:
                 self.GRepo = Github().get_repo(repo.replace("https://github.com/",""))
-            except:
+            except Exception as e:
+                if not self.silent:
+                    print(f"Issue with checking the statistics: {e}")
                 pass
 
         self.cloneurl = "git clone --depth 1"
