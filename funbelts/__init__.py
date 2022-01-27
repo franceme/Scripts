@@ -391,7 +391,7 @@ class GRepo(object):
                 make_header = not os.path.exists(foil_out)
 
                 with open(foil_out,"a+") as writer:
-                    if header:
+                    if make_header:
                         writer.write("RepoName,RepoURL,RepoTopics,Stars\n")
                     writer.write(','.join( [self.GRepo.reponame,self.GRepo.url, ':'.join(list(self.GRepo.get_topics())),self.GRepo.stargazers_count] ) + "\n")
         except Exception as e:
