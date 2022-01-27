@@ -364,7 +364,7 @@ class GRepo(object):
         if is_not_empty(tag):
             self.tag = tag
             self.cloneurl += f" --branch {tag}"
-            self.full_url += "<b>" + 
+            self.full_url += "<b>" + tag
 
         if is_not_empty(self.commit):
             self.full_url += "<#>" + self.commit
