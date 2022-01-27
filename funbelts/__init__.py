@@ -28,6 +28,9 @@ cur_time = str(timr.now().strftime('%Y_%m_%d-%H_%M'))
 rnd = lambda _input: f"{round(_input * 100)} %"
 similar = lambda x,y:SequenceMatcher(None, a, b).ratio()*100
 
+def logg(foil,string):
+    with open(foil,"a+") as writer:
+        writer.write(f"{foil}\n")
 
 def cur_time_ms():
     now = timr.now()
@@ -90,13 +93,17 @@ def plant(plantuml_text, _type='png'):
         return base+base64.b64encode(compressed_string).translate(b64_to_plantuml).decode('utf-8')    
 
 def run(cmd, display:bool=False):
+    out = lambda string:logg(".run_logs.txt",string)
     try:
-        print(cmd)
+        if display:
+            out(cmd)
         output = os.popen(cmd).read()
-        print(output)
+        if display:
+            out(output)
         return output
     except Exception as e:
-        print(output)
+        if display:
+            out(output)
         return e
 
 def from_nan(val):
@@ -335,8 +342,9 @@ class GRepo(object):
     with GRepo("https://github.com/owner/repo","v1","hash") as repo:
         os.path.exists(repo.reponame) #TRUE
     """
-    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False):
+    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False,logfile:str=".run_logs.txt"):
         repo = repo.replace('http://','https://')
+        self.out = lambda string:logg(logfile,string)
         self.url = repo
         self.reponame = reponame
         self.commit = commit or None
@@ -348,7 +356,7 @@ class GRepo(object):
                 self.GRepo = Github().get_repo(repo.replace("https://github.com/",""))
             except Exception as e:
                 if self.print:
-                    print(f"Issue with checking the statistics: {e}")
+                    self.out(f"Issue with checking the statistics: {e}")
                 pass
 
         self.cloneurl = "git clone --depth 1"
@@ -358,24 +366,24 @@ class GRepo(object):
 
     def __enter__(self):
         if not os.path.exists(self.reponame):
-            print(f"Waiting between scanning projects to ensure GitHub Doesn't get angry")
+            self.out(f"Waiting between scanning projects to ensure GitHub Doesn't get angry")
             wait_for(5, silent=not self.print)
-            run(f"{self.cloneurl} {self.url}", display=True)
+            run(f"{self.cloneurl} {self.url}", display=self.print)
 
             if is_not_empty(self.commit):
-                run(f"cd {self.reponame} && git reset --hard {self.commit} && cd ../", display=True)
+                run(f"cd {self.reponame} && git reset --hard {self.commit} && cd ../", display=self.print)
 
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
         try:
             if self.delete:
                 if self.print:
-                    print("Deleting the file")
+                    self.out("Deleting the file")
 
-                run(f"yes|rm -r {self.reponame}", display=True)
+                run(f"yes|rm -r {self.reponame}", display=self.print)
         except Exception as e:
             if self.print:
-                print(f"Issue with deleting the file: {e}")
+                self.out(f"Issue with deleting the file: {e}")
 
         try:
             if self.write_statistics:
@@ -388,7 +396,7 @@ class GRepo(object):
                     writer.write(','.join( [self.GRepo.reponame,self.GRepo.url, ':'.join(list(self.GRepo.get_topics())),self.GRepo.stargazers_count] ) + "\n")
         except Exception as e:
             if self.print:
-                print(f"Issue with writing the statistics: {e}")
+                self.out(f"Issue with writing the statistics: {e}")
 
         return self
 
