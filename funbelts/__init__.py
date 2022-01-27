@@ -88,10 +88,17 @@ def plant(plantuml_text, _type='png'):
         compressed_string = zlibbed_str[2:-4]
         return base+base64.b64encode(compressed_string).translate(b64_to_plantuml).decode('utf-8')    
 
-def run(cmd):
+def run(cmd, display:bool=False):
     try:
-        return os.popen(cmd).read()
+        if display:
+            print(cmd)
+        output = os.popen(cmd).read()
+        if display:
+            print(output)
+        return output
     except Exception as e:
+        if display:
+            print(output)
         return e
 
 def from_nan(val):
@@ -330,19 +337,19 @@ class GRepo(object):
     with GRepo("https://github.com/owner/repo","v1","hash") as repo:
         os.path.exists(repo.reponame) #TRUE
     """
-    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=False,write_statistics:bool=False):
+    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False):
         repo = repo.replace('http://','https://')
         self.url = repo
         self.reponame = reponame
         self.commit = commit or None
         self.delete = delete
-        self.silent = silent
+        self.print = not silent
         self.write_statistics = write_statistics
         if self.write_statistics:
             try:
                 self.GRepo = Github().get_repo(repo.replace("https://github.com/",""))
             except Exception as e:
-                if not self.silent:
+                if self.print:
                     print(f"Issue with checking the statistics: {e}")
                 pass
 
@@ -354,19 +361,22 @@ class GRepo(object):
     def __enter__(self):
         if not os.path.exists(self.reponame):
             print(f"Waiting between scanning projects to ensure GitHub Doesn't get angry")
-            wait_for(5, silent=self.silent)
-            run(f"{self.cloneurl} {self.url}")
+            wait_for(5, silent=not self.print)
+            run(f"{self.cloneurl} {self.url}", self.print)
 
             if is_not_empty(self.commit):
-                run(f"cd {self.reponame} && git reset --hard {self.commit} && cd ../")
+                run(f"cd {self.reponame} && git reset --hard {self.commit} && cd ../", self.print)
 
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
         try:
             if self.delete:
-                run(f"yes|rm -r {self.reponame}")
+                if self.print:
+                    print("Deleting the file")
+
+                run(f"yes|rm -r {self.reponame}", self.print)
         except Exception as e:
-            if not self.silent:
+            if self.print:
                 print(f"Issue with deleting the file: {e}")
 
         try:
@@ -379,7 +389,7 @@ class GRepo(object):
                         writer.write("RepoName,RepoURL,RepoTopics,Stars\n")
                     writer.write(','.join( [self.GRepo.reponame,self.GRepo.url, ':'.join(list(self.GRepo.get_topics())),self.GRepo.stargazers_count] ) + "\n")
         except Exception as e:
-            if not self.silent:
+            if self.print:
                 print(f"Issue with writing the statistics: {e}")
 
         return self
