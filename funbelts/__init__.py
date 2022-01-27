@@ -360,16 +360,25 @@ class GRepo(object):
 
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.delete:
-            run(f"yes|rm -r {self.reponame}")
-        if self.write_statistics:
-            foil_out = ".github_stats.csv"
-            make_header = not os.path.exists(foil_out)
+        try:
+            if self.delete:
+                run(f"yes|rm -r {self.reponame}")
+        except Exception as e:
+            if not self.silent:
+                print(f"Issue with deleting the file: {e}")
 
-            with open(foil_out,"a+") as writer:
-                if header:
-                    writer.write("RepoName,RepoURL,RepoTopics,Stars\n")
-                writer.write(','.join( [self.GRepo.reponame,self.GRepo.url, ':'.join(list(self.GRepo.get_topics())),self.GRepo.stargazers_count] ) + "\n")
+        try:
+            if self.write_statistics:
+                foil_out = ".github_stats.csv"
+                make_header = not os.path.exists(foil_out)
+
+                with open(foil_out,"a+") as writer:
+                    if header:
+                        writer.write("RepoName,RepoURL,RepoTopics,Stars\n")
+                    writer.write(','.join( [self.GRepo.reponame,self.GRepo.url, ':'.join(list(self.GRepo.get_topics())),self.GRepo.stargazers_count] ) + "\n")
+        except Exception as e:
+            if not self.silent:
+                print(f"Issue with writing the statistics: {e}")
 
         return self
 
