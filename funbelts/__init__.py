@@ -362,10 +362,10 @@ class GRepo(object):
         if not os.path.exists(self.reponame):
             print(f"Waiting between scanning projects to ensure GitHub Doesn't get angry")
             wait_for(5, silent=not self.print)
-            run(f"{self.cloneurl} {self.url}", self.print)
+            run(f"{self.cloneurl} {self.url}", display=True)
 
             if is_not_empty(self.commit):
-                run(f"cd {self.reponame} && git reset --hard {self.commit} && cd ../", self.print)
+                run(f"cd {self.reponame} && git reset --hard {self.commit} && cd ../", display=True)
 
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -374,7 +374,7 @@ class GRepo(object):
                 if self.print:
                     print("Deleting the file")
 
-                run(f"yes|rm -r {self.reponame}", self.print)
+                run(f"yes|rm -r {self.reponame}", display=True)
         except Exception as e:
             if self.print:
                 print(f"Issue with deleting the file: {e}")
