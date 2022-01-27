@@ -351,6 +351,7 @@ class GRepo(object):
         self.delete = delete
         self.print = True#not silent
         self.write_statistics = write_statistics
+        self.full_url = repo
         if self.write_statistics:
             try:
                 self.GRepo = Github().get_repo(repo.replace("https://github.com/",""))
@@ -363,6 +364,10 @@ class GRepo(object):
         if is_not_empty(tag):
             self.tag = tag
             self.cloneurl += f" --branch {tag}"
+            self.full_url += "<b>" + 
+
+        if is_not_empty(self.commit):
+            self.full_url += "<#>" + self.commit
 
     def __enter__(self):
         if not os.path.exists(self.reponame):
