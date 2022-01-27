@@ -343,7 +343,7 @@ class GRepo(object):
         self.reponame = reponame
         self.commit = commit or None
         self.delete = delete
-        self.print = not silent
+        self.print = True#not silent
         self.write_statistics = write_statistics
         if self.write_statistics:
             try:
