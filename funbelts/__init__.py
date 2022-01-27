@@ -90,15 +90,12 @@ def plant(plantuml_text, _type='png'):
 
 def run(cmd, display:bool=False):
     try:
-        if display:
-            print(cmd)
+        print(cmd)
         output = os.popen(cmd).read()
-        if display:
-            print(output)
+        print(output)
         return output
     except Exception as e:
-        if display:
-            print(output)
+        print(output)
         return e
 
 def from_nan(val):
