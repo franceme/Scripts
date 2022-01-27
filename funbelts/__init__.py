@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, sys, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string
 from datetime import datetime as timr
 from sqlite3 import connect
