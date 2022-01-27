@@ -30,7 +30,7 @@ similar = lambda x,y:SequenceMatcher(None, a, b).ratio()*100
 
 def logg(foil,string):
     with open(foil,"a+") as writer:
-        writer.write(f"{foil}\n")
+        writer.write(f"{string}\n")
 
 def cur_time_ms():
     now = timr.now()
