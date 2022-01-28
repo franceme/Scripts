@@ -370,7 +370,7 @@ class GRepo(object):
             self.full_url += "<#>" + self.commit
 
     def __enter__(self):
-        if not os.path.exists(self.reponame):
+        if not os.path.exists(self.reponame) and self.url.startswith("https://github.com/"):
             self.out(f"Waiting between scanning projects to ensure GitHub Doesn't get angry")
             wait_for(5, silent=not self.print)
             run(f"{self.cloneurl} {self.url}", display=self.print)
