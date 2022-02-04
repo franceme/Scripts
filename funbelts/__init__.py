@@ -321,13 +321,15 @@ class excelwriter(object):
         return self
 
     def add_frame(self,sheet_name,dataframe):
+        if len(sheet_name) > 20:
+            sheet_name = f"EXTRASHEET_{len(self.dataframes)}"
+        self.dataframes += [(dataframe, sheet_name)]
         #https://xlsxwriter.readthedocs.io/example_pandas_table.html
         dataframe.to_excel(self.writer, sheet_name=sheet_name, startrow=1,header=False,index=False)
         worksheet = self.writer.sheets[sheet_name]
         (max_row, max_col) = dataframe.shape
         worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': [{'header': column} for column in dataframe.columns]})
         worksheet.set_column(0, max_col - 1, 12)
-        self.dataframes += [(dataframe, sheet_name)]
 
 def append_to_excel(fpath, df, sheet_name):
     """
