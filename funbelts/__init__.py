@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, sys, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string
+import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string
 from datetime import datetime as timr
 from sqlite3 import connect
 from glob import glob
@@ -22,6 +22,9 @@ from github import Github
 
 def install_import(importname):
     os.system(f"{sys.executable} -m pip install {importname} --upgrade")
+
+def user():
+	return str(pwd.getpwuid(os.getuid())[0]).strip().lower()
 
 percent = lambda x,y: ("{0:.2f}").format(100 * (x / float(y)))
 cur_time = str(timr.now().strftime('%Y_%m_%d-%H_%M'))
