@@ -506,3 +506,13 @@ def mac_addr():
     Return the mac address of the current computer
     """
     return str(':'.join(re.findall('..', '%012x' % uuid.getnode())))
+
+def of_list(obj: object, functor=None) -> list:
+	if not functor or functor is None:
+		def functor(x):
+			return x
+
+	if isinstance(obj, list):
+		return [functor(x) for x in obj]
+	else:
+		return [functor(obj)]
