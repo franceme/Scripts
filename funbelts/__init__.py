@@ -24,7 +24,7 @@ def install_import(importname):
     os.system(f"{sys.executable} -m pip install {importname} --upgrade")
 
 def user():
-	return str(pwd.getpwuid(os.getuid())[0]).strip().lower()
+    return str(pwd.getpwuid(os.getuid())[0]).strip().lower()
 
 percent = lambda x,y: ("{0:.2f}").format(100 * (x / float(y)))
 cur_time = str(timr.now().strftime('%Y_%m_%d-%H_%M'))
@@ -93,7 +93,7 @@ def plant(plantuml_text, _type='png'):
         """
         zlibbed_str = compress(plantuml_text.encode('utf-8'))
         compressed_string = zlibbed_str[2:-4]
-        return base+base64.b64encode(compressed_string).translate(b64_to_plantuml).decode('utf-8')    
+        return base+base64.b64encode(compressed_string).translate(b64_to_plantuml).decode('utf-8')
 
 def run(cmd, display:bool=False):
     out = lambda string:logg(".run_logs.txt",string)
@@ -511,11 +511,11 @@ def mac_addr():
     return str(':'.join(re.findall('..', '%012x' % uuid.getnode())))
 
 def of_list(obj: object, functor=None) -> list:
-	if not functor or functor is None:
-		def functor(x):
-			return x
+    if not functor or functor is None:
+        def functor(x):
+            return x
 
-	if isinstance(obj, list):
-		return [functor(x) for x in obj]
-	else:
-		return [functor(obj)]
+    if isinstance(obj, list):
+        return [functor(x) for x in obj]
+    else:
+        return [functor(obj)]
