@@ -3,6 +3,7 @@ import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platfo
 from datetime import datetime as timr
 from sqlite3 import connect
 from glob import glob
+import functools
 import httplib2
 import six
 from threading import Thread, Lock
@@ -19,6 +20,22 @@ import psutil
 from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from github import Github
+
+def silent_exec(default=None, returnException:bool=False):
+    """
+    https://stackoverflow.com/questions/39905390/how-to-auto-wrap-function-call-in-try-catch
+
+    Usage: @silent_exec()
+    """
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs):
+            except Exception as e:
+                return e if returnException else default
+        return wrapper
+    return decorator
 
 def install_import(importname):
     os.system(f"{sys.executable} -m pip install {importname} --upgrade")
@@ -306,6 +323,13 @@ class telegramBot(object):
         finally:
             self.upload_lock.release()
 
+@silent_exec()
+def save_frames(frame, frame_name, output_type):
+    if output_type == 'csv':
+        frame.to_csv(clean_string(frame_name) + ".csv")
+    if output_type == 'pkl':
+        frame.to_pickle(clean_string(frame_name) + ".pkl")
+
 class excelwriter(object):
     def __init__(self,filename):
         if not filename.endswith(".xlsx"):
@@ -315,24 +339,32 @@ class excelwriter(object):
     def __enter__(self):
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
+        for (frame, frame_name) in self.dataframes:
+            for output_type in ["csv","pkl"]:
+                save_frames(frame, frame_name, output_type)
+
         try:
             self.writer.save()
         except:
-            for (frame, frame_name) in self.dataframes:
-                frame.to_csv(frame_name + ".csv")
+            pass
         self.writer = None
         return self
 
     def add_frame(self,sheet_name,dataframe):
-        if len(sheet_name) > 20:
-            sheet_name = f"EXTRASHEET_{len(self.dataframes)}"
-        self.dataframes += [(dataframe, sheet_name)]
-        #https://xlsxwriter.readthedocs.io/example_pandas_table.html
-        dataframe.to_excel(self.writer, sheet_name=sheet_name, startrow=1,header=False,index=False)
-        worksheet = self.writer.sheets[sheet_name]
-        (max_row, max_col) = dataframe.shape
-        worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': [{'header': column} for column in dataframe.columns]})
-        worksheet.set_column(0, max_col - 1, 12)
+        if len(sheet_name) > 10:
+            sheet_name = f"EXTRA_{len(self.dataframes)}"
+
+        self.dataframes += [(dataframe, clean_string(sheet_name))]
+
+        try:
+            #https://xlsxwriter.readthedocs.io/example_pandas_table.html
+            dataframe.to_excel(self.writer, sheet_name=sheet_name, startrow=1,header=False,index=False)
+            worksheet = self.writer.sheets[sheet_name]
+            (max_row, max_col) = dataframe.shape
+            worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': [{'header': column} for column in dataframe.columns]})
+            worksheet.set_column(0, max_col - 1, 12)
+        except:
+            pass
 
 def append_to_excel(fpath, df, sheet_name):
     """
