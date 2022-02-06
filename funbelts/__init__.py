@@ -31,7 +31,7 @@ def silent_exec(default=None, returnException:bool=False):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             try:
-                return func(*args, **kwargs):
+                return func(*args, **kwargs)
             except Exception as e:
                 return e if returnException else default
         return wrapper
