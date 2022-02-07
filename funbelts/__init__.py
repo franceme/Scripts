@@ -20,10 +20,10 @@ import psutil
 from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from github import Github
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup as curry
+#from selenium import webdriver
+#from selenium.webdriver.common.keys import Keys
+#from selenium.webdriver.chrome.options import Options
+#from bs4 import BeautifulSoup as curry
 
 def run(cmd, display:bool=False):
     out = lambda string:logg(".run_logs.txt",string)
@@ -38,7 +38,7 @@ def run(cmd, display:bool=False):
         if display:
             out(output)
         return e
-
+"""
 def crawl_github(search_queries, google_chrome_driver = "98.0.4758.80/chromedriver_mac64.zip"):
     github_url = f"https://github.com/search?l=Python&q={'+'.join(search_queries)}"
 
@@ -99,7 +99,7 @@ def crawl_github(search_queries, google_chrome_driver = "98.0.4758.80/chromedriv
 
     driver.quit()
     run(f"rm {chrome_driver}")
-
+"""
 def silent_exec(default=None, returnException:bool=False):
     """
     https://stackoverflow.com/questions/39905390/how-to-auto-wrap-function-call-in-try-catch
