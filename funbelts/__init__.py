@@ -20,6 +20,85 @@ import psutil
 from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from github import Github
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup as curry
+
+def run(cmd, display:bool=False):
+    out = lambda string:logg(".run_logs.txt",string)
+    try:
+        if display:
+            out(cmd)
+        output = os.popen(cmd).read()
+        if display:
+            out(output)
+        return output
+    except Exception as e:
+        if display:
+            out(output)
+        return e
+
+def crawl_github(search_queries, google_chrome_driver = "98.0.4758.80/chromedriver_mac64.zip"):
+    github_url = f"https://github.com/search?l=Python&q={'+'.join(search_queries)}"
+
+    chrome_driver = "./chromedriver"
+    if not os.path.exists(chrome_driver):
+        chrome_driver = "https://chromedriver.storage.googleapis.com/" + google_chrome_driver
+
+        chrome_file = f"{chrome_driver.split('/')[-1]}"
+        chrome_name = f"{chrome_file.replace('.zip', '')}"
+
+        run(f"curl {chrome_driver} --output {chrome_file}")
+        run(f"unzip {chrome_file} && rm {chrome_file}")
+
+    options = Options()
+    # options.headless = True
+
+    driver = webdriver.Chrome(executable_path=chrome_driver, options=options)
+
+    driver.get(github_url)
+    overall_repos = []
+    __page = 0
+    while True:
+        sleepy = 60
+        print(f"Working on page:{__page} {driver.current_url}")
+
+        time_out = True
+        while time_out:
+            # Checking for time out
+            try:
+                response = driver.find_element_by_class_name("container").find_elements_by_xpath("h1")[0].text
+                print(f"There is a timeout, waiting for {sleepy * 2} seconds")
+                wait_for(sleepy * 2)
+            except:
+                time_out = False
+                pass
+
+        for repo in list(
+                driver.find_element_by_class_name("repo-list").find_elements_by_tag_name("li")):
+            overall_repos += [
+                str([
+                        x.get_attribute('href')
+                        for x in list(repo.find_elements_by_xpath('.//a'))
+                    ][0])
+            ]
+        next_page_url = driver.find_element_by_class_name("next_page").get_attribute('href') or None
+
+        if next_page_url is None:
+            break
+        else:
+            print(f"Waiting {sleepy} seconds to go to the next page")
+            wait_for(sleepy)
+            driver.get(next_page_url)
+        __page += 1
+
+    with open(f"{repo_name}_raw_urls.txt", "w") as writer:
+        for repo in overall_repos:
+            writer.write(f"{repo}\n")
+
+    driver.quit()
+    run(f"rm {chrome_driver}")
 
 def silent_exec(default=None, returnException:bool=False):
     """
@@ -112,19 +191,6 @@ def plant(plantuml_text, _type='png'):
         compressed_string = zlibbed_str[2:-4]
         return base+base64.b64encode(compressed_string).translate(b64_to_plantuml).decode('utf-8')
 
-def run(cmd, display:bool=False):
-    out = lambda string:logg(".run_logs.txt",string)
-    try:
-        if display:
-            out(cmd)
-        output = os.popen(cmd).read()
-        if display:
-            out(output)
-        return output
-    except Exception as e:
-        if display:
-            out(output)
-        return e
 
 def from_nan(val):
     if str(val).lower() == "nan":
