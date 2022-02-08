@@ -1,2 +1,5 @@
+.ipynb_checkpoints
 dist/
 *.egg-info/
+funbelts/.ipynb_checkpoints
+funbelts/__pycache__
