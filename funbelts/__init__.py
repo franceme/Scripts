@@ -63,6 +63,15 @@ def clean_string(foil, perma:bool=False):
     else:
         return foil.replace(' ', '\ ').replace('&','\&')
 
+def latex_prep(name,prefix="section"):
+    prefix,label_prefix = prefix.lower(),prefix.count("s")
+    nice_name = name.lower().replace(' ','_')
+
+    return f"\{prefix}{{{name}}} \label{{{'s'*label_prefix}e:{nice_name}}}"
+
+sub = lambda name:latex_prep(name,"subsection")
+subsub = lambda name:latex_prep(name,"subsubsection")
+
 def timeout(timeout=2 * 60 * 60):
     from threading import Thread
     import functools
