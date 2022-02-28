@@ -69,6 +69,9 @@ def latex_prep(name,prefix="section"):
 
     return f"\{prefix}{{{name}}} \label{{{'s'*label_prefix}e:{nice_name}}}"
 
+def input_check(message, checkfor):
+    return input(message).strip().lower() == checkfor
+
 sub = lambda name:latex_prep(name,"subsection")
 subsub = lambda name:latex_prep(name,"subsubsection")
 
