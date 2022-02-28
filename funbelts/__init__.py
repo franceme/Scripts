@@ -257,6 +257,8 @@ def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch
             print(f"Exception: {e}")
     return output
 
+import_global_context = lambda string: "import" in line.lower() or "global" in line.lower()
+
 def get_line_from_context(line_num:int, context:str,_default=""):
     try:
         for line in row.context.split('\n'):
