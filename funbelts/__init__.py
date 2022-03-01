@@ -565,3 +565,13 @@ def of_list(obj: object, functor=None) -> list:
         return [functor(x) for x in obj]
     else:
         return [functor(obj)]
+
+def to_flat_list(lyst: list) -> list:
+    if not lyst:
+        return []
+
+    big_list = len(lyst) > 1
+    if isinstance(lyst[0], list):
+        return flatten_list(lyst[0]) + (big_list * flatten_list(lyst[1:]))
+    else:
+        return [lyst[0]] + (big_list * flatten_list(lyst[1:]))
