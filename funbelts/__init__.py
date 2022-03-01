@@ -566,7 +566,7 @@ def of_list(obj: object, functor=None) -> list:
     else:
         return [functor(obj)]
 
-def to_flat_list(lyst: list) -> list:
+def flatten_list(lyst: list) -> list:
     if not lyst:
         return []
 
