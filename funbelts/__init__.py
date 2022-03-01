@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string
+import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string,enum
 from datetime import datetime as timr
 from sqlite3 import connect
 from glob import glob
@@ -566,12 +566,26 @@ def of_list(obj: object, functor=None) -> list:
     else:
         return [functor(obj)]
 
-def flatten_list(lyst: list) -> list:
-    if not lyst:
-        return []
+#https://thispointer.com/python-get-file-size-in-kb-mb-or-gb-human-readable-format/
+class SIZE_UNIT(enum.Enum):
+    BYTES = 1
+    KB = 2
+    MB = 3
+    GB = 4
 
-    big_list = len(lyst) > 1
-    if isinstance(lyst[0], list):
-        return flatten_list(lyst[0]) + (big_list * flatten_list(lyst[1:]))
+
+def convert_unit(size_in_bytes, unit):
+    """ Convert the size from bytes to other units like KB, MB or GB"""
+    if unit == SIZE_UNIT.KB:
+        return size_in_bytes/1024
+    elif unit == SIZE_UNIT.MB:
+        return size_in_bytes/(1024*1024)
+    elif unit == SIZE_UNIT.GB:
+        return size_in_bytes/(1024*1024*1024)
     else:
-        return [lyst[0]] + (big_list * flatten_list(lyst[1:]))
+        return size_in_bytes
+
+def fsize(file_name, size_type = SIZE_UNIT.GB ):
+    """ Get file in size in given unit like KB, MB or GB"""
+    size = os.path.getsize(file_name)
+    return convert_unit(size, size_type)
