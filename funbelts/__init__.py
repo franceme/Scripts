@@ -588,4 +588,4 @@ def convert_unit(size_in_bytes, unit):
 def fsize(file_name, size_type = SIZE_UNIT.GB ):
     """ Get file in size in given unit like KB, MB or GB"""
     size = os.path.getsize(file_name)
-    return convert_unit(size, size_type)
+    return round(convert_unit(size, size_type),2)
