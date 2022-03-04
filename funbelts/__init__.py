@@ -589,3 +589,8 @@ def fsize(file_name, size_type = SIZE_UNIT.GB ):
     """ Get file in size in given unit like KB, MB or GB"""
     size = os.path.getsize(file_name)
     return round(convert_unit(size, size_type),2)
+
+def load_env(file_path = ".env.json"):
+    with open(file_path,"r") as reader:
+        contents = json.load(reader)
+    return contents
