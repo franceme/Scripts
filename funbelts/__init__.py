@@ -594,3 +594,12 @@ def load_env(file_path = ".env.json"):
     with open(file_path,"r") as reader:
         contents = json.load(reader)
     return contents
+
+def intadd(dyct,name):
+    result = 0
+
+    if name in dyct:
+        result = dyct[name] + 1
+
+    dyct[name] = result
+    return result
