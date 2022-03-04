@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo apt-get update -y
 sudo apt-get install wget -y
 
 wget https://github.com/xonsh/xonsh/releases/latest/download/xonsh-x86_64.AppImage
