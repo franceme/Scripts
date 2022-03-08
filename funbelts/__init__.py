@@ -350,6 +350,7 @@ class excelwriter(object):
             filename += ".xlsx"
 
         self.append = os.path.exists(filename)
+        self.filename = filename
 
         if self.append:
             self.writer = pd.ExcelWriter(filename, engine="xlsxwriter")
@@ -382,8 +383,8 @@ class excelwriter(object):
             """
             https://stackoverflow.com/questions/47737220/append-dataframe-to-excel-with-pandas#answer-64824686
             """
-            with pd.ExcelWriter(fpath, mode="a",engine="openpyxl") as f:
-                df.to_excel(f, sheet_name=sheet_name)
+            with pd.ExcelWriter(self.filename, mode="a",engine="openpyxl") as f:
+                dataframe.to_excel(f, sheet_name=sheet_name)
 
         else:
             try:
