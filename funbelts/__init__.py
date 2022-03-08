@@ -393,32 +393,36 @@ class GRepo(object):
     with GRepo("https://github.com/owner/repo","v1","hash") as repo:
         os.path.exists(repo.reponame) #TRUE
     """
-    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False,logfile:str=".run_logs.txt"):
-        repo = repo.replace('http://','https://')
-        self.out = lambda string:logg(logfile,string)
-        self.url = repo
-        self.reponame = reponame
-        self.commit = commit or None
-        self.delete = delete
-        self.print = True#not silent
-        self.write_statistics = write_statistics
-        self.full_url = repo
-        if self.write_statistics:
-            try:
-                self.GRepo = Github().get_repo(repo.replace("https://github.com/",""))
-            except Exception as e:
-                if self.print:
-                    self.out(f"Issue with checking the statistics: {e}")
-                pass
+    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False,local_dir:bool=False,logfile:str=".run_logs.txt"):
+        if local_dir:
+            self.reponame = reponame
+            self.url = "file://" + self.reponame
+        else:
+            repo = repo.replace('http://','https://')
+            self.out = lambda string:logg(logfile,string)
+            self.url = repo
+            self.reponame = reponame
+            self.commit = commit or None
+            self.delete = delete
+            self.print = True#not silent
+            self.write_statistics = write_statistics
+            self.full_url = repo
+            if self.write_statistics:
+                try:
+                    self.GRepo = Github().get_repo(repo.replace("https://github.com/",""))
+                except Exception as e:
+                    if self.print:
+                        self.out(f"Issue with checking the statistics: {e}")
+                    pass
 
-        self.cloneurl = "git clone --depth 1"
-        if is_not_empty(tag):
-            self.tag = tag
-            self.cloneurl += f" --branch {tag}"
-            self.full_url += "<b>" + tag
+            self.cloneurl = "git clone --depth 1"
+            if is_not_empty(tag):
+                self.tag = tag
+                self.cloneurl += f" --branch {tag}"
+                self.full_url += "<b>" + tag
 
-        if is_not_empty(self.commit):
-            self.full_url += "<#>" + self.commit
+            if is_not_empty(self.commit):
+                self.full_url += "<#>" + self.commit
 
     def __enter__(self):
         if not os.path.exists(self.reponame) and self.url.startswith("https://github.com/"):
