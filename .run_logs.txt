@@ -1,0 +1,14 @@
+Deleting the file
+yes|rm -r https://github.com/owner/repo
+
+Deleting the file
+yes|rm -r https://github.com/owner/repo
+
+Waiting between scanning projects to ensure GitHub Doesn't get angry
+git clone --depth 1 --branch v1 https://github.com/owner/repo
+
+cd repo && git reset --hard hash && cd ../
+
+Deleting the file
+yes|rm -r repo
+

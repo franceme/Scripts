@@ -394,18 +394,18 @@ class GRepo(object):
         os.path.exists(repo.reponame) #TRUE
     """
     def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False,local_dir:bool=False,logfile:str=".run_logs.txt"):
+        self.delete = delete
+        self.print = not silent
+        self.out = lambda string:logg(logfile,string)
+        self.write_statistics = write_statistics
         if local_dir:
             self.reponame = reponame
             self.url = "file://" + self.reponame
         else:
             repo = repo.replace('http://','https://')
-            self.out = lambda string:logg(logfile,string)
             self.url = repo
             self.reponame = reponame
             self.commit = commit or None
-            self.delete = delete
-            self.print = True#not silent
-            self.write_statistics = write_statistics
             self.full_url = repo
             if self.write_statistics:
                 try:
