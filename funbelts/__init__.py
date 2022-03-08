@@ -401,8 +401,17 @@ def append_to_excel(fpath, df, sheet_name):
     """
     https://stackoverflow.com/questions/47737220/append-dataframe-to-excel-with-pandas#answer-64824686
     """
-    with pd.ExcelWriter(fpath, mode="a",engine="openpyxl") as f:
-        df.to_excel(f, sheet_name=sheet_name)
+    try:
+        with pd.ExcelWriter(fpath, mode="a", engine="openpyxl") as f:
+            df.to_excel(f, sheet_name=sheet_name)
+
+        with pd.ExcelWriter(filename, engine="xlsxwriter") as writer:
+            worksheet = writer.sheets[sheet_name]
+            (max_row, max_col) = df.shape
+            worksheet.add_table(0, 0, max_row, max_col - 1,{'columns': [{'header': column} for column in df.columns]})
+            worksheet.set_column(0, max_col - 1, 12)
+    except:
+        pass
 
 class GRepo(object):
     """
