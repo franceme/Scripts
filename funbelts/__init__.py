@@ -348,37 +348,53 @@ class excelwriter(object):
     def __init__(self,filename):
         if not filename.endswith(".xlsx"):
             filename += ".xlsx"
-        self.writer = pd.ExcelWriter(filename, engine="xlsxwriter")
+
+        self.append = os.path.exists(filename)
+
+        if self.append:
+            self.writer = pd.ExcelWriter(filename, engine="xlsxwriter")
         self.dataframes = []
     def __enter__(self):
         return self
     def __exit__(self, exc_type, exc_val, exc_tb):
-        for (frame, frame_name) in self.dataframes:
-            for output_type in ["csv","pkl"]:
-                save_frames(frame, frame_name, output_type)
+        if not self.append:
+            for (frame, frame_name) in self.dataframes:
+                for output_type in ["csv","pkl"]:
+                    save_frames(frame, frame_name, output_type)
 
-        try:
-            self.writer.save()
-        except:
-            pass
+            try:
+                self.writer.save()
+            except:
+                pass
         self.writer = None
         return self
 
+    def __iadd__(self, sheet_name,dataframe):
+        self.add_frame(sheet_name,dataframe)
+
     def add_frame(self,sheet_name,dataframe):
-        if len(sheet_name) > 10:
+        if len(sheet_name) > 26:
             sheet_name = f"EXTRA_{len(self.dataframes)}"
 
         self.dataframes += [(dataframe, clean_string(sheet_name))]
 
-        try:
-            #https://xlsxwriter.readthedocs.io/example_pandas_table.html
-            dataframe.to_excel(self.writer, sheet_name=sheet_name, startrow=1,header=False,index=False)
-            worksheet = self.writer.sheets[sheet_name]
-            (max_row, max_col) = dataframe.shape
-            worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': [{'header': column} for column in dataframe.columns]})
-            worksheet.set_column(0, max_col - 1, 12)
-        except:
-            pass
+        if self.append:
+            """
+            https://stackoverflow.com/questions/47737220/append-dataframe-to-excel-with-pandas#answer-64824686
+            """
+            with pd.ExcelWriter(fpath, mode="a",engine="openpyxl") as f:
+                df.to_excel(f, sheet_name=sheet_name)
+
+        else:
+            try:
+                #https://xlsxwriter.readthedocs.io/example_pandas_table.html
+                dataframe.to_excel(self.writer, sheet_name=sheet_name, startrow=1,header=False,index=False)
+                worksheet = self.writer.sheets[sheet_name]
+                (max_row, max_col) = dataframe.shape
+                worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': [{'header': column} for column in dataframe.columns]})
+                worksheet.set_column(0, max_col - 1, 12)
+            except:
+                pass
 
 def append_to_excel(fpath, df, sheet_name):
     """
