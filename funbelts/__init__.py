@@ -310,6 +310,12 @@ class SqliteConnect(object):
             dataframes = {}
             pass
         [self.add_pandaframe(frame, key) for key,frame in dataframes.items()]
+    def to_excel(self,filename):
+        for key,value in dataframes.items():
+            with xcyl(filename) as writer:
+                for table_name in (self.connection.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()):
+                    writer.addr(table_name,pd.read_sql_query(f"SELECT * FROM {table_name}",self.connection)
+
 
 class telegramBot(object):
     """
@@ -434,7 +440,7 @@ class xcyl(object):
         if not filename.endswith(".xlsx"):
             filename += ".xlsx"
         self.filename = filename
-        self.cur_data_sets = {}
+        self.cur_data_sets = values
         return None
 
     def __enter__(self):
@@ -448,7 +454,6 @@ class xcyl(object):
 
         with pd.ExcelWriter(self.filename, engine="xlsxwriter") as writer:
             for itr, (key, value) in enumerate(self.cur_data_sets.items()):
-                print(value)
                 value.to_excel(writer, sheet_name=key, startrow=1, header=False, index=False)
                 worksheet = writer.sheets[key]
                 (max_row, max_col) = value.shape
@@ -462,6 +467,8 @@ class xcyl(object):
             sheet_name += "_"
         self.cur_data_sets[sheet_name] = dataframe
         return self
+    def sanity(self):
+        return True
 
 class GRepo(object):
     """
