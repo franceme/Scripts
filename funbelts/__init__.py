@@ -286,6 +286,9 @@ class SqliteConnect(object):
     ```
     """
     def __init__(self,file_name:str,echo:bool=False):
+        #https://datacarpentry.org/python-ecology-lesson/09-working-with-sql/index.html
+        #https://stackoverflow.com/questions/305378/list-of-tables-db-schema-dump-etc-using-the-python-sqlite3-api
+        #https://stackoverflow.com/questions/34570260/how-to-get-table-names-using-sqlite3-through-python
         self.file_name = file_name
         self.table_name = "dataset"
         self.echo = echo
@@ -314,7 +317,7 @@ class SqliteConnect(object):
         try:
             with xcyl(filename) as writer:
                 for table_name in self.connection.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall():
-                    writer.addr(table_name,pd.read_sql_query(f"SELECT * FROM {table_name};",self.connection))
+                    writer.addr(table_name[0],pd.read_sql_query(f"SELECT * FROM {table_name};",self.connection))
         except Exception as e:
             print(e)
 
