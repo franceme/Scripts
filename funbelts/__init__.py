@@ -413,7 +413,7 @@ def append_to_excel(fpath, df, sheet_name):
     except:
         pass
 
-class new_cell(object):
+class xcyl(object):
     """
     the new excel object
     """
@@ -422,6 +422,7 @@ class new_cell(object):
             filename += ".xlsx"
         self.filename = filename
         self.cur_data_sets = {}
+        return None
 
     def __enter__(self):
         return self
@@ -443,7 +444,7 @@ class new_cell(object):
                 worksheet.set_column(0, max_col - 1, 12)
         return self
 
-    def __iadd__(self, sheet_name, dataframe):
+    def addr(self, sheet_name, dataframe):
         while sheet_name in list(self.cur_data_sets.keys()):
             sheet_name += "_"
         self.cur_data_sets[sheet_name] = dataframe
