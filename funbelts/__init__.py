@@ -413,7 +413,7 @@ def append_to_excel(fpath, df, sheet_name):
     except:
         pass
 
-class excyl(object):
+class new_cell(object):
     """
     the new excel object
     """
