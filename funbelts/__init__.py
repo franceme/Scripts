@@ -302,9 +302,10 @@ class SqliteConnect(object):
     def add_excel(self,fileName):
         dataframes = {}
         try:
-            for table_name, frame in pd.read_excel('somefile.xlsx', engine="openpyxl", sheet_name=None).items():
+            for table_name, frame in pd.read_excel(fileName, engine="openpyxl", sheet_name=None).items():
                 dataframes[table_name] = frame
-        except:
+        except Exception as e:
+            print(e)
             print(f"Issue parsing the dataframe file: {fileName}")
             dataframes = {}
             pass
