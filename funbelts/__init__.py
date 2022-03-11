@@ -314,7 +314,7 @@ class SqliteConnect(object):
         for key,value in dataframes.items():
             with xcyl(filename) as writer:
                 for table_name in (self.connection.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()):
-                    writer.addr(table_name,pd.read_sql_query(f"SELECT * FROM {table_name}",self.connection)
+                    writer.addr(table_name,pd.read_sql_query(f"SELECT * FROM {table_name};",self.connection))
 
 
 class telegramBot(object):
