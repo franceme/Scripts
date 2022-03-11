@@ -413,6 +413,42 @@ def append_to_excel(fpath, df, sheet_name):
     except:
         pass
 
+class excyl(object):
+    """
+    the new excel object
+    """
+    def __init__(self,filename:str="TEMP_VALUE", values:dict = {}):
+        if not filename.endswith(".xlsx"):
+            filename += ".xlsx"
+        self.filename = filename
+        self.cur_data_sets = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        zyp_name = self.filename + ".zip"
+        for key,value in self.cur_data_sets.items():
+            value.to_csv(str(key) + ".csv")
+            os.system(f"7z a {zyp_name} {key}.csv -sdel")
+
+        with pd.ExcelWriter(self.filename, engine="xlsxwriter") as writer:
+            for itr, (key, value) in enumerate(self.cur_data_sets.items()):
+                print(value)
+                value.to_excel(writer, sheet_name=key, startrow=1, header=False, index=False)
+                worksheet = writer.sheets[key]
+                (max_row, max_col) = value.shape
+                worksheet.add_table(0, 0, max_row, max_col - 1,
+                                    {'columns': [{'header': column} for column in value.columns]})
+                worksheet.set_column(0, max_col - 1, 12)
+        return self
+
+    def __iadd__(self, sheet_name, dataframe):
+        while sheet_name in list(self.cur_data_sets.keys()):
+            sheet_name += "_"
+        self.cur_data_sets[sheet_name] = dataframe
+        return self
+
 class GRepo(object):
     """
     Sample usage:
