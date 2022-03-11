@@ -312,10 +312,9 @@ class SqliteConnect(object):
         [self.add_pandaframe(frame, key) for key,frame in dataframes.items()]
     def to_excel(self,filename):
         try:
-            for key,value in dataframes.items():
-                with xcyl(filename) as writer:
-                    for table_name in self.connection.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall():
-                        writer.addr(table_name,pd.read_sql_query(f"SELECT * FROM {table_name};",self.connection))
+            with xcyl(filename) as writer:
+                for table_name in self.connection.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall():
+                    writer.addr(table_name,pd.read_sql_query(f"SELECT * FROM {table_name};",self.connection))
         except Exception as e:
             print(e)
 
