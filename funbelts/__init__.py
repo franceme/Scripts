@@ -297,6 +297,18 @@ class SqliteConnect(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
         return self
+    def add_pandaframe(self, dataframe, sheet_name:str=None):
+        dataframe.to_sql(sheet_name, self.connection)
+    def add_excel(self,fileName):
+        dataframes = {}
+        try:
+            for table_name, frame in pd.read_excel('somefile.xlsx', sheet_name=None).items():
+                dataframes[table_name] = frame
+        except:
+            print(f"Issue parsing the dataframe file: {fileName}")
+            dataframes = {}
+            pass
+        [self.add_pandaframe(frame, key) for key,frame in dataframes.items()
 
 class telegramBot(object):
     """
