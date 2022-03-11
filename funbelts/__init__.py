@@ -308,7 +308,7 @@ class SqliteConnect(object):
             print(f"Issue parsing the dataframe file: {fileName}")
             dataframes = {}
             pass
-        [self.add_pandaframe(frame, key) for key,frame in dataframes.items()
+        [self.add_pandaframe(frame, key) for key,frame in dataframes.items()]
 
 class telegramBot(object):
     """
