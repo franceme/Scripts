@@ -68,8 +68,8 @@ def contains_dict(list_dicts, current_dict):
             return True
     return False
 
-def dyct_frame(raw_dyct):
-    dyct = dc(raw_dyct)
+def dyct_frame(raw_dyct,deepcopy:bool=True):
+    dyct = dc(raw_dyct) if deepcopy else raw_dyct
     for key in list(raw_dyct.keys()):
         dyct[key] = [dyct[key]]
     return pd.DataFrame.from_dict(dyct)
@@ -385,11 +385,11 @@ class telegramBot(object):
                 pass
         finally:
             self.msg_lock.release()
-    def upload(self,path:str):
+    def upload(self,path:str,caption:str=''):
         self.upload_lock.acquire()
         try:
             if os.path.exists(path):
-                self.bot.send_document(chat_id = self.chatID,document=open(path,'rb'))
+                self.bot.send_document(chat_id = self.chatID,document=open(path,'rb'),caption=caption)
                 self.msg(f"File {path} has been uploaded")
         finally:
             self.upload_lock.release()
