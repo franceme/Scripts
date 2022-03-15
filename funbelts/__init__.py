@@ -1,8 +1,10 @@
 from __future__ import print_function
 import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string,enum
 from datetime import datetime as timr
+from rich import print as outy
 from sqlite3 import connect
 from glob import glob
+from copy import deepcopy as dc
 import functools
 import httplib2
 import six
@@ -47,6 +49,37 @@ percent = lambda x,y: ("{0:.2f}").format(100 * (x / float(y)))
 cur_time = str(timr.now().strftime('%Y_%m_%d-%H_%M'))
 rnd = lambda _input: f"{round(_input * 100)} %"
 similar = lambda x,y:SequenceMatcher(None, a, b).ratio()*100
+
+def compare_dicts(raw_dyct_one, raw_dyct_two):
+    one,two = dc(raw_dyct_one),dc(raw_dyct_two)
+
+    for dyct in [one,two]:
+        for key in list(dyct.keys()):
+            if ut.from_nan(dyct[key]) == None:
+                dyct[key] = np.nan
+
+    return set(one.items()) ^ set(two.items())
+
+same_dicts = lambda dyct_one, dyct_two: compare_dicts(dyct_one, dyct_two) == set()
+
+def contains_dicts(list_dicts, current_dict):
+    for dyct in list_dicts:
+        if same_dicts(dyct, current_dict):
+            return True
+    return False
+
+def dyct_frame(raw_dyct):
+    dyct = dc(raw_dyct)
+    for key in list(raw_dyct.keys()):
+        dyct[key] = [dyct[key]]
+    return pd.DataFrame.from_dict(dyct)
+
+def arr_to_pd(array_of_dictionaries):
+    try:
+        return pd.concat( list(map( dyct_frame,array_of_dictionaries )) )
+    except Exception as e:
+        print(f"Error:> {e}")
+        return None
 
 def logg(foil,string):
     with open(foil,"a+") as writer:
