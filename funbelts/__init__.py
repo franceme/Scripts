@@ -508,6 +508,14 @@ class xcyl(object):
     def sanity(self):
         return True
 
+def grab_sheet(sheet_name:str='',file_name:str='RawResults.xlsx'):
+    import pandas as pd;from openpyxl import load_workbook
+    sheet_names = load_workbook(file_name, read_only=True, keep_links=False).sheetnames
+    if sheet_name in sheet_names:
+        return pd.read_excel(file_name,engine="openpyxl",sheet_name=sheet_name)
+    print(f"{sheet_name} not found in {sheet_names}")
+    return None
+
 class GRepo(object):
     """
     Sample usage:
