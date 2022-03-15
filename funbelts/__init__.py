@@ -55,14 +55,14 @@ def compare_dicts(raw_dyct_one, raw_dyct_two):
 
     for dyct in [one,two]:
         for key in list(dyct.keys()):
-            if ut.from_nan(dyct[key]) == None:
+            if from_nan(dyct[key]) == None:
                 dyct[key] = np.nan
 
     return set(one.items()) ^ set(two.items())
 
 same_dicts = lambda dyct_one, dyct_two: compare_dicts(dyct_one, dyct_two) == set()
 
-def contains_dicts(list_dicts, current_dict):
+def contains_dict(list_dicts, current_dict):
     for dyct in list_dicts:
         if same_dicts(dyct, current_dict):
             return True
