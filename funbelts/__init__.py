@@ -395,7 +395,7 @@ class telegramBot(object):
                     self.msg(f"File {path} has been uploaded")
         finally:
             self.upload_lock.release()
-    def upload_video(self,path:str,caption:str='',confirm:bool=False)
+    def upload_video(self,path:str,caption:str='',confirm:bool=False):
         self.upload_lock.acquire()
         try:
             if os.path.exists(path):
