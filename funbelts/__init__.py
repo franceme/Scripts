@@ -395,14 +395,12 @@ class telegramBot(object):
                     self.msg(f"File {path} has been uploaded")
         finally:
             self.upload_lock.release()
-    def upload_video(self,path:str,caption:str='',confirm:bool=False):
+    def upload_video(self,path:str,caption:str=''):
         self.upload_lock.acquire()
         try:
             if os.path.exists(path):
                 #https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html?highlight=send_video#telegram.Bot.send_video
                 self.bot.send_video(chat_id = self.chatID,video=open(path,'rb'),caption=caption)
-                if confirm:
-                    self.msg(f"File {path} has been uploaded")
         finally:
             self.upload_lock.release()
 
