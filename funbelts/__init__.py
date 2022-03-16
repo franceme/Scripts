@@ -391,7 +391,7 @@ class telegramBot(object):
             if os.path.exists(path):
                 self.bot.send_document(chat_id = self.chatID,document=open(path,'rb'),caption=caption)
                 self.msg(f"File {path} has been uploaded")
-                if disable_confirm:
+                if confirm:
                     self.msg(f"File {path} has been uploaded")
         finally:
             self.upload_lock.release()
@@ -401,7 +401,7 @@ class telegramBot(object):
             if os.path.exists(path):
                 #https://python-telegram-bot.readthedocs.io/en/stable/telegram.bot.html?highlight=send_video#telegram.Bot.send_video
                 self.bot.send_video(chat_id = self.chatID,video=open(path,'rb'),caption=caption)
-                if disable_confirm:
+                if confirm:
                     self.msg(f"File {path} has been uploaded")
         finally:
             self.upload_lock.release()
