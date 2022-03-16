@@ -373,18 +373,22 @@ class telegramBot(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.bot = None
         return self
-    def msg(self,msg:str):
+    def msg(self,msg:str,print_out:bool=False):
         self.msg_lock.acquire()
         try:
             if msg.strip() == "":
                 msg = "EMPTY"
             try:
                 self.bot.send_message(self.chatID,msg)
+                if print_out:
+                    print(msg)
             except Exception as e:
                 print(e)
                 pass
         finally:
             self.msg_lock.release()
+    def msg_out(self, msg:str):
+        self.msg(msg,True)
     def upload(self,path:str,caption:str='',confirm:bool=False):
         self.upload_lock.acquire()
         try:
