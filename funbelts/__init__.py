@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string,enum
+import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string,enum,shelve
 from datetime import datetime as timr
 from rich import print as outy
 from sqlite3 import connect
@@ -38,6 +38,29 @@ def silent_exec(default=None, returnException:bool=False):
                 return e if returnException else default
         return wrapper
     return decorator
+
+def write_shelf(shelf_name, print_out:bool=False):
+    with shelve.open(shelf_name, 'n') as shelf:
+        for key in dir():
+            try:
+                shelf[key] = globals()[key]
+            except TypeError:
+                print(f"Error shelving the key {key} due to a type error")
+            except Exception as e:
+                print(f"Error shelving the key {key} due to {e}")
+
+    if print_out:
+        print(f"The shelf has been written")
+
+def load_shelf(shelf_name, print_out:bool=False):
+    with shelve.open(shelf_name) as shelf:
+        for key in shelf:
+            if print_out:
+                print(f"Loading the shelf item {key}")
+            globals()[key] = shelf[key]
+
+    if print_out:
+        print(f"The shelf has been loaded")
 
 def install_import(importname):
     os.system(f"{sys.executable} -m pip install {importname} --upgrade")
