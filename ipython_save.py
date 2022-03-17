@@ -3,15 +3,7 @@
 import os,sys,shelve
 
 
-if __name__ == '__main__':
-	self_name = str(__file__).replace('./','').lower()
-	args = [x for x in set(map(lambda x: x.strip(), sys.argv)) if self_name not in x.lower()]
-
-    if args == []:
-        shelf_name = "output.shelf"
-    else:
-        shelf_name = args[0]
-
+def shelf_out(shelf_name):
     with shelve.open(shelf_name, 'n') as shelf:
         for key in dir():
             try:
@@ -21,3 +13,15 @@ if __name__ == '__main__':
             except Exception as e:
                 print(f"Could not shelf {key} due to exception {e}")
     print("Completed")
+
+if __name__ == '__main__':
+    self_name = str(__file__).replace('./','').lower()
+    args = [x for x in set(map(lambda x: x.strip(), sys.argv)) if self_name not in x.lower()]
+
+    if args == []:
+        shelf_name = "output.shelf"
+    else:
+        shelf_name = args[0]
+    shelf_out(shelf_name)
+
+#shelf_out('')
