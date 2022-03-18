@@ -83,6 +83,7 @@ def compare_dicts(raw_dyct_one, raw_dyct_two):
 
     return set(one.items()) ^ set(two.items())
 
+diff_lists = lambda one,two: set(one) ^ set(two)
 same_dicts = lambda dyct_one, dyct_two: compare_dicts(dyct_one, dyct_two) == set()
 
 def contains_dict(list_dicts, current_dict):
