@@ -96,6 +96,20 @@ def metrics(TP,FP,TN,FN, percent:bool=False):
         'F1': prep(2 * div( (precision * recall),(precision + recall) )),
     }
 
+def add_metrics(fwame, TP:str='TP',FP:str='FP',TN:str='TN',FN:str='FN'):
+    fwame['Precision'] = fwame[TP]/(fwame[TP]+fwame[FP])
+    fwame['Recall'] = fwame[TP]/(fwame[TP]+fwame[FN])
+    fwame['TNR'] = fwame[TN]/(fwame[TN]+fwame[FP])
+    fwame['FNR'] = fwame[FN]/(fwame[FN]+fwame[TP])
+    fwame['FPR'] = fwame[FP]/(fwame[FP]+fwame[TN])
+    fwame['FDR'] = fwame[FP]/(fwame[FP]+fwame[TP])
+    fwame['FOR'] = fwame[FN]/(fwame[FN]+fwame[TN])
+    fwame['TS'] = fwame[TP]/(fwame[TP]+fwame[FP]+fwame[FN])
+    fwame['Accuracy'] = (fwame[TP]+fwame[TN])/(fwame[TP]+fwame[FP]+fwame[TN]+fwame[FN])
+    fwame['PPCR'] = (fwame[TP]+fwame[FP])/(fwame[TP]+fwame[FP]+fwame[TN]+fwame[FN])
+    fwame['F1'] = 2 * ((fwame['Precision'] * fwame['Recall'])/(fwame['Precision'] + fwame['Recall']))
+    return fwame
+
 def compare_dicts(raw_dyct_one, raw_dyct_two):
     one,two = dc(raw_dyct_one),dc(raw_dyct_two)
 
