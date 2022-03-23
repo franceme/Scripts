@@ -73,6 +73,29 @@ cur_time = str(timr.now().strftime('%Y_%m_%d-%H_%M'))
 rnd = lambda _input: f"{round(_input * 100)} %"
 similar = lambda x,y:SequenceMatcher(None, a, b).ratio()*100
 
+def metrics(TP,FP,TN,FN, percent:bool=False):
+    div = lambda x,y:x/y if y else 0
+    prep = lambda x:percent(x) if percent else x
+    precision, recall = div(TP , (TP + FP)), div(TP , (TP + FN))
+
+    return {
+        'TP': TP,
+        'FP': FP,
+        'TN': TN,
+        'FN': FN,
+        'PPV': prep(precision),
+        'Recall': prep(recall),
+        'TNR': prep(div(TN , (TN + FP))),
+        'FNR': prep(div(FN , (FN + TP))),
+        'FPR': prep(div(FP , (FP + TN))),
+        'FDR': prep(div(FP , (FP + TP))),
+        'FOR': prep(div(FN , (FN + TN))),
+        'TS': prep(div(TP , (TP + FN + FP))),
+        'Accuracy': prep(div((TP + TN) , (TP + TN + FP + FN))),
+        'PPCR': prep(div((TP + FP) , (TP + TN + FP + FN))),
+        'F1': prep(2 * div( (precision * recall),(precision + recall) )),
+    }
+
 def compare_dicts(raw_dyct_one, raw_dyct_two):
     one,two = dc(raw_dyct_one),dc(raw_dyct_two)
 
