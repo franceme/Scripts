@@ -615,6 +615,9 @@ class GRepo(object):
         if local_dir:
             self.reponame = reponame
             self.url = "file://" + self.reponame
+            self.commit = commit or None
+            self.full_url = repo
+            self.cloneurl = None
         else:
             repo = repo.replace('http://','https://')
             self.url = repo
@@ -673,6 +676,17 @@ class GRepo(object):
                 self.out(f"Issue with writing the statistics: {e}")
 
         return self
+    def get_info(self):
+        return {
+            'URL':self.url,
+            'RepoName':self.reponame,
+            'Commit':self.commit,
+            'FullUrl':self.full_url,
+            'CloneUrl':self.cloneurl,
+            'datetime':timr.utcnow().strftime('%Y%m%dT%H%M%S')
+        }
+    def get_info_frame(self):
+        return dyct_frame(self.get_info())
 
 class ThreadMgr(object):
     def __init__(self,max_num_threads:int=100,time_to_wait:int=10):
