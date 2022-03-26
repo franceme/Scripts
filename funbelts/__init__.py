@@ -132,6 +132,13 @@ def contains_dict(list_dicts, current_dict):
             return True
     return False
 
+def frame_dycts(frame):
+    output = []
+    for row in frame.itertuples():
+        output += [row._asdict()]
+    return output
+
+
 def dyct_frame(raw_dyct,deepcopy:bool=True):
     dyct = dc(raw_dyct) if deepcopy else raw_dyct
     for key in list(raw_dyct.keys()):
