@@ -145,9 +145,9 @@ def dyct_frame(raw_dyct,deepcopy:bool=True):
         dyct[key] = [dyct[key]]
     return pd.DataFrame.from_dict(dyct)
 
-def arr_to_pd(array_of_dictionaries):
+def arr_to_pd(array_of_dictionaries, ignore_index:bool=True):
     try:
-        return pd.concat( list(map( dyct_frame,array_of_dictionaries )) )
+        return pd.concat( list(map( dyct_frame,array_of_dictionaries )), ignore_index=True )
     except Exception as e:
         print(f"Error:> {e}")
         return None
