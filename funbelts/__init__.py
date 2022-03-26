@@ -96,18 +96,21 @@ def metrics(TP,FP,TN,FN, percent:bool=False):
         'F1': prep(2 * div( (precision * recall),(precision + recall) )),
     }
 
-def add_metrics(fwame, TP:str='TP',FP:str='FP',TN:str='TN',FN:str='FN'):
-    fwame['Precision'] = fwame[TP]/(fwame[TP]+fwame[FP])
-    fwame['Recall'] = fwame[TP]/(fwame[TP]+fwame[FN])
-    fwame['TNR'] = fwame[TN]/(fwame[TN]+fwame[FP])
-    fwame['FNR'] = fwame[FN]/(fwame[FN]+fwame[TP])
-    fwame['FPR'] = fwame[FP]/(fwame[FP]+fwame[TN])
-    fwame['FDR'] = fwame[FP]/(fwame[FP]+fwame[TP])
-    fwame['FOR'] = fwame[FN]/(fwame[FN]+fwame[TN])
-    fwame['TS'] = fwame[TP]/(fwame[TP]+fwame[FP]+fwame[FN])
-    fwame['Accuracy'] = (fwame[TP]+fwame[TN])/(fwame[TP]+fwame[FP]+fwame[TN]+fwame[FN])
-    fwame['PPCR'] = (fwame[TP]+fwame[FP])/(fwame[TP]+fwame[FP]+fwame[TN]+fwame[FN])
-    fwame['F1'] = 2 * ((fwame['Precision'] * fwame['Recall'])/(fwame['Precision'] + fwame['Recall']))
+def add_metrics(fwame, TP:str='TP',FP:str='FP',TN:str='TN',FN:str='FN', percent:bool=False):
+    div = lambda x,y:x/y if y else 0
+    prep = lambda x:percent(x) if percent else x
+
+    fwame['Precision'] = prep(fwame[TP]/(fwame[TP]+fwame[FP]))
+    fwame['Recall'] = prep(fwame[TP]/(fwame[TP]+fwame[FN]))
+    fwame['TNR'] = prep(fwame[TN]/(fwame[TN]+fwame[FP]))
+    fwame['FNR'] = prep(fwame[FN]/(fwame[FN]+fwame[TP]))
+    fwame['FPR'] = prep(fwame[FP]/(fwame[FP]+fwame[TN]))
+    fwame['FDR'] = prep(fwame[FP]/(fwame[FP]+fwame[TP]))
+    fwame['FOR'] = prep(fwame[FN]/(fwame[FN]+fwame[TN]))
+    fwame['TS'] = prep(fwame[TP]/(fwame[TP]+fwame[FP]+fwame[FN]))
+    fwame['Accuracy'] = prep((fwame[TP]+fwame[TN])/(fwame[TP]+fwame[FP]+fwame[TN]+fwame[FN]))
+    fwame['PPCR'] = prep((fwame[TP]+fwame[FP])/(fwame[TP]+fwame[FP]+fwame[TN]+fwame[FN]))
+    fwame['F1'] = prep(2 * ((fwame['Precision'] * fwame['Recall'])/(fwame['Precision'] + fwame['Recall'])))
     return fwame
 
 def compare_dicts(raw_dyct_one, raw_dyct_two):
@@ -354,7 +357,7 @@ def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch
             print(f"Exception: {e}")
     return output
 
-import_global_context = lambda string: "import" in line.lower() or "global" in line.lower()
+import_global_context = lambda line: "import" in line.lower() or "global" in line.lower()
 
 def get_line_from_context(line_num:int, context:str,_default=""):
     try:
