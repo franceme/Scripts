@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string,enum,shelve
+import matplotlib as mpl
 from datetime import datetime as timr
 from rich import print as outy
 from sqlite3 import connect
@@ -600,6 +601,14 @@ def grab_sheet(sheet_name:str='',file_name:str='RawResults.xlsx'):
         return pd.read_excel(file_name,engine="openpyxl",sheet_name=sheet_name)
     print(f"{sheet_name} not found in {sheet_names}")
     return None
+
+
+def heatmap(frame, column, min_to_max:bool=False):
+    cmap = mpl.cm.get_cmap('RdYlGn')
+    norm = mpl.colors.Normalize(frame[column].min(), frame[column].max())
+    def colorRow(col):
+        return [f'background-color: {mpl.colors.to_hex(cmap(norm(col[column])))}' for _ in col]
+    return frame.reset_index().style.apply(colorRow,axis=1)
 
 class GRepo(object):
     """
