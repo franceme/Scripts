@@ -170,6 +170,17 @@ if __name__ == '__main__':
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it -v \"`pwd`:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\""
 		]
+	elif command == "blockly":
+		dockerName = "ml"
+
+		dis_port = "5000"
+		if not checkPort(dis_port):
+			dis_port = open_port()
+		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
+
+		cmds = [
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {getDockerImage(dockerName)} blockly"
+		]
 	elif command == "python" or command == "py":
 		if len(sys.argv) != 3:
 			print("Please enter the Docker Name")
