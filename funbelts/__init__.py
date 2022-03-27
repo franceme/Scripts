@@ -604,12 +604,21 @@ def grab_sheet(sheet_name:str='',file_name:str='RawResults.xlsx'):
     return None
 
 
-def heatmap(frame, column, min_to_max:bool=False):
+def heatmap(frame, column, min_to_max:bool=False, output_frame_name:str=None):
     cmap = matplotlib.cm.get_cmap('RdYlGn')
     norm = mpl.colors.Normalize(frame[column].min(), frame[column].max())
     def colorRow(col):
         return [f'background-color: {mpl.colors.to_hex(cmap(norm(col[column])))}' for _ in col]
-    return frame.reset_index().style.apply(colorRow,axis=1)
+    output_frame = frame.reset_index().style.apply(colorRow,axis=1)
+    if output_frame_name:
+        if not output_frame_name.endswith('.xlsx'):
+            output_frame_name += ".xlsx"
+        try:
+            output_frame.to_excel(output_frame_name)
+        except Exception as e:
+            print(f"Issue writing the file out :> {e}")
+            pass
+    return output_frame
 
 class GRepo(object):
     """
