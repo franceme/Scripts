@@ -603,6 +603,17 @@ def grab_sheet(sheet_name:str='',file_name:str='RawResults.xlsx'):
     print(f"{sheet_name} not found in {sheet_names}")
     return None
 
+def diff_in_frames(_from, _to):
+    df1, df2 = dc(_from), dc(_to)
+    df_all = pd.concat([df1, df2], axis='columns', keys=['First', 'Second'])
+    df_final = df_all.swaplevel(axis='columns')[df1.columns[1:]]
+    def highlight_diff(data, color='yellow'):
+        attr = 'background-color: {}'.format(color)
+        other = data.xs('First', axis='columns', level=-1)
+        return pd.DataFrame(np.where(data.ne(other, level=0), attr, ''),
+                            index=data.index, columns=data.columns)
+
+    return df_final.style.apply(highlight_diff, axis=None)
 
 def heatmap(frame, column, min_to_max:bool=False, output_frame_name:str=None):
     cmap = matplotlib.cm.get_cmap('RdYlGn')
