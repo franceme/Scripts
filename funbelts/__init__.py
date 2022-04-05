@@ -618,6 +618,8 @@ def grab_sheet(sheet_name:str='',file_name:str='RawResults.xlsx'):
 
 def diff_in_frames(_from, _to):
     df1, df2 = dc(_from), dc(_to)
+    for x in [df1, df2]:
+        x.replace(np.nan, "Empty", inplace=True)
     df_all = pd.concat([df1, df2], axis='columns', keys=['First', 'Second'])
     df_final = df_all.swaplevel(axis='columns')[df1.columns[1:]]
     def highlight_diff(data, color='yellow'):
