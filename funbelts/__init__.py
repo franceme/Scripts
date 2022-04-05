@@ -366,6 +366,19 @@ def retrieve_context(file_name:str, line_number:int, context:int=5, patternmatch
             print(f"Exception: {e}")
     return output
 
+def print_context(source_code:str, line_numbering=None, code_formatting=lambda line:line, print_out:bool=False):
+    contents = []
+    if line_numbering is None:
+        line_numbering = lambda num: str(num).zfill(len(str(len(source_code.split("\n")))))
+
+    for itr,line in enumerate(source_code.split("\n")):
+        current_line = f"{line_numbering(itr)}: {code_formatting(line)}"
+        if print_out:
+            print(current_line)
+        contents += [current_line]
+
+    return "\n".join(contents)
+
 import_global_context = lambda line: "import" in line.lower() or "global" in line.lower()
 
 def get_line_from_context(line_num:int, context:str,_default=""):
