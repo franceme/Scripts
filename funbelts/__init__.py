@@ -24,6 +24,21 @@ import psutil
 from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from github import Github
+import base64
+from cryptography.fernet import Fernet
+
+def str_to_base64(string, password:bool=False, encoding:str='utf-8'):
+    current = base64.b64encode(string.encode(encoding))
+    if password:
+        key = Fernet.generate_key()
+        current = Fernet(key).encrypt(current)
+        key = key.decode(encoding)
+    return (current.decode(encoding), key or None)
+
+def base64_to_str(b64, password:str=None, encoding:str='utf-8'):
+     if password:
+         current = Fernet(password.encode(encoding)).decrypt(b64.encode(encoding)).decode(encoding)
+     return base64.b64decode(current or b64).decode(encoding)
 
 def silent_exec(default=None, returnException:bool=False):
     """
