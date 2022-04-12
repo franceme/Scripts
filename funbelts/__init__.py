@@ -95,7 +95,7 @@ of_dir = lambda PATH,name:[os.path.join(dp, f) for dp, dn, filenames in os.walk(
 
 def metrics(TP,FP,TN,FN, use_percent:bool=False):
     div = lambda x,y:x/y if y else 0
-    prep = lambda x:percent(x) if use_percent else x
+    prep = lambda x:percent(x, 100) if use_percent else x
     precision, recall = div(TP , (TP + FP)), div(TP , (TP + FN))
 
     return {
@@ -116,9 +116,9 @@ def metrics(TP,FP,TN,FN, use_percent:bool=False):
         'F1': prep(2 * div( (precision * recall),(precision + recall) )),
     }
 
-def add_metrics(fwame, TP:str='TP',FP:str='FP',TN:str='TN',FN:str='FN', percent:bool=False):
+def add_metrics(fwame, TP:str='TP',FP:str='FP',TN:str='TN',FN:str='FN', use_percent:bool=False):
     div = lambda x,y:x/y if y else 0
-    prep = lambda x:percent(x) if percent else x
+    prep = lambda x:percent(x, 100) if use_percent else x
 
     fwame['Precision_PPV'] = prep(fwame[TP]/(fwame[TP]+fwame[FP]))
     fwame['Recall'] = prep(fwame[TP]/(fwame[TP]+fwame[FN]))
