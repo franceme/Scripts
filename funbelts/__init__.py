@@ -606,7 +606,7 @@ class xcyl(object):
         zyp_name = self.filename + ".zip"
         for key,value in self.cur_data_sets.items():
             value.to_csv(str(key) + ".csv")
-            os.system(f"7z a {zyp_name} {key}.csv -sdel")
+            #os.system(f"7z a {zyp_name} {key}.csv -sdel")
 
         with pd.ExcelWriter(self.filename, engine="xlsxwriter") as writer:
             for itr, (key, value) in enumerate(self.cur_data_sets.items()):
