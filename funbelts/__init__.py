@@ -103,9 +103,9 @@ def metrics(TP,FP,TN,FN, use_percent:bool=False):
         'FP': FP,
         'TN': TN,
         'FN': FN,
-        'PPV': prep(precision),
+        'Precision_PPV': prep(precision),
         'Recall': prep(recall),
-        'TNR': prep(div(TN , (TN + FP))),
+        'Specificity_TNR': prep(div(TN , (TN + FP))),
         'FNR': prep(div(FN , (FN + TP))),
         'FPR': prep(div(FP , (FP + TN))),
         'FDR': prep(div(FP , (FP + TP))),
@@ -120,9 +120,9 @@ def add_metrics(fwame, TP:str='TP',FP:str='FP',TN:str='TN',FN:str='FN', percent:
     div = lambda x,y:x/y if y else 0
     prep = lambda x:percent(x) if percent else x
 
-    fwame['Precision'] = prep(fwame[TP]/(fwame[TP]+fwame[FP]))
+    fwame['Precision_PPV'] = prep(fwame[TP]/(fwame[TP]+fwame[FP]))
     fwame['Recall'] = prep(fwame[TP]/(fwame[TP]+fwame[FN]))
-    fwame['TNR'] = prep(fwame[TN]/(fwame[TN]+fwame[FP]))
+    fwame['Specificity_TNR'] = prep(fwame[TN]/(fwame[TN]+fwame[FP]))
     fwame['FNR'] = prep(fwame[FN]/(fwame[FN]+fwame[TP]))
     fwame['FPR'] = prep(fwame[FP]/(fwame[FP]+fwame[TN]))
     fwame['FDR'] = prep(fwame[FP]/(fwame[FP]+fwame[TP]))
