@@ -93,9 +93,9 @@ file_by_type = lambda PATH,ext:[os.path.join(dp, f) for dp, dn, filenames in os.
 file_by_name = lambda PATH,name:[os.path.join(dp, f) for dp, dn, filenames in os.walk(PATH) for f in filenames if f == name]
 of_dir = lambda PATH,name:[os.path.join(dp, f) for dp, dn, filenames in os.walk(PATH) for f in filenames if os.path.isdir(f) and f == name]
 
-def metrics(TP,FP,TN,FN, percent:bool=False):
+def metrics(TP,FP,TN,FN, use_percent:bool=False):
     div = lambda x,y:x/y if y else 0
-    prep = lambda x:percent(x) if percent else x
+    prep = lambda x:percent(x) if use_percent else x
     precision, recall = div(TP , (TP + FP)), div(TP , (TP + FN))
 
     return {
