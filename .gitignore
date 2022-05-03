@@ -3,3 +3,6 @@ dist/
 *.egg-info/
 funbelts/.ipynb_checkpoints
 funbelts/__pycache__
+*.ipynb
+.run_logs.txt
+.DS_Store

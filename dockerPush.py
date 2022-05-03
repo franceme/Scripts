@@ -239,6 +239,15 @@ if __name__ == '__main__':
 		cmds = [
 			f"docker run {ports} -v \"`pwd`:/sync\" -e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password' -v \"`pwd`:/sync\" splunk/splunk:latest"
 		]
+	elif command == "beaker":
+		dis_port = "8888"
+		if not checkPort(dis_port):
+			dis_port = open_port()
+
+		ports = getPorts(ports=[f"{dis_port}:8888"])
+		cmds = [
+			f"docker run {ports} -v \"`pwd`:/sync\" -v \"`pwd`:/sync\" beakerx/beakerx"
+		]
 	elif command == "superset":
 		dis_port = "8088"
 		if not checkPort(dis_port):

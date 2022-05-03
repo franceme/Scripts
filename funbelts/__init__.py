@@ -2,6 +2,7 @@ from __future__ import print_function
 import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string,enum,shelve
 import matplotlib as mpl
 import matplotlib.cm
+import requests
 from datetime import datetime as timr
 from rich import print as outy
 from sqlite3 import connect
@@ -10,6 +11,7 @@ from copy import deepcopy as dc
 import functools
 import httplib2
 import six
+from waybackpy import WaybackMachineSaveAPI as checkpoint
 from threading import Thread, Lock
 from six.moves.urllib.parse import urlencode
 if six.PY2:
@@ -21,11 +23,42 @@ from difflib import SequenceMatcher
 from sqlalchemy import create_engine
 import pandas as pd
 import psutil
+import time
 from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from github import Github
 import base64
 from cryptography.fernet import Fernet
+
+def live_link(url:str):
+    response = False
+    try:
+        response_type = requests.get(url)
+        response = response_type.status_code < 400
+        time.sleep(2)
+    except:
+        pass
+    return response
+
+def save_link(url:str):
+    save_url = None
+    if live_link(url):
+        try:
+            saver = checkpoint(url, user_agent="Mozilla/5.0 (Windows NT 5.1; rv:40.0) Gecko/20100101 Firefox/40.0")
+            try:
+                save_url = saver.save(9)
+                time.sleep(10)
+                if save_url is None:
+                    save_url = saver.saved_archive
+            except Exception as e:
+                print(f"Issue with saving the link {url}: {e}")
+                pass
+                    pass
+        except Exception as e:
+            print(f"Issue with saving the link {url}: {e}")
+            pass
+    return save_url
+    
 
 def str_to_base64(string, password:bool=False, encoding:str='utf-8'):
     current = base64.b64encode(string.encode(encoding))
@@ -158,12 +191,17 @@ def frame_dycts(frame):
         output += [row._asdict()]
     return output
 
+def pd_to_arr(frame):
+    return frame_dycts(frame)
 
 def dyct_frame(raw_dyct,deepcopy:bool=True):
     dyct = dc(raw_dyct) if deepcopy else raw_dyct
     for key in list(raw_dyct.keys()):
         dyct[key] = [dyct[key]]
     return pd.DataFrame.from_dict(dyct)
+
+def dyct_to_pd(raw_dyct, deepcopy:bool=True):
+    return dyct_frame(raw_dyct, deepcopy)
 
 def arr_to_pd(array_of_dictionaries, ignore_index:bool=True):
     try:
@@ -670,22 +708,22 @@ class GRepo(object):
     with GRepo("https://github.com/owner/repo","v1","hash") as repo:
         os.path.exists(repo.reponame) #TRUE
     """
-    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False,local_dir:bool=False,logfile:str=".run_logs.txt"):
+    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False,local_dir:bool=False,logfile:str=".run_logs.txt",zip_url:str=None):
         self.delete = delete
         self.print = not silent
         self.out = lambda string:logg(logfile,string)
         self.write_statistics = write_statistics
+        self.tag = None
+        self.commit = commit or None
+        self.reponame = reponame
+        self.cloneurl = None
+        self.zip_url_base = zip_url
         if local_dir:
-            self.reponame = reponame
             self.url = "file://" + self.reponame
-            self.commit = commit or None
             self.full_url = repo
-            self.cloneurl = None
         else:
             repo = repo.replace('http://','https://')
             self.url = repo
-            self.reponame = reponame
-            self.commit = commit or None
             self.full_url = repo
             if self.write_statistics:
                 try:
@@ -750,6 +788,45 @@ class GRepo(object):
         }
     def get_info_frame(self):
         return dyct_frame(self.get_info())
+
+    @property
+    def zip_url(self):
+        if self.zip_url_base is not None:
+            return zip_url_base
+
+        if not self.url.startswith("https://github.com/"):
+            print("NONE")
+            return None
+
+        # url_builder = "https://web.archive.org/save/" + repo.url + "/archive"
+        url_builder = self.url + "/archive"
+        if self.commit is not None:
+            # https://github.com/owner/reponame/archive/hash.zip
+            url_builder += f"/{self.commit}.zip"
+
+        if self.commit is None:
+            # https://web.archive.org/save/https://github.com/owner/reponame/archive/refs/heads/tag.zip
+            url_builder += f"/refs/heads"
+            if self.tag is None:
+                for base_branch in ['master', 'main']:
+                    temp_url = url_builder + f"/{base_branch}.zip"
+                    if live_link(temp_url):
+                        url_builder = temp_url
+                        break
+                    time.sleep(4)
+            elif self.tag is not None:
+                url_builder += f"/{self.tag}.zip"
+
+        self.zip_url_base = url_builder
+        return self.zip_url_base
+
+    def save_link(self):
+        return save_link(self.zip_url)
+
+class GitHubRepo(GRepo):
+    def __init__(self, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False,local_dir:bool=False,logfile:str=".run_logs.txt"):
+        reponame = repo.replace("http://", "https://").replace('https://github.com/','').split('/')[-1].replace('.git','')
+        super().__init__(reponame, repo, tag, commit, delete, silent, write_statistics, local_dir, logfile)
 
 class ThreadMgr(object):
     def __init__(self,max_num_threads:int=100,time_to_wait:int=10):
