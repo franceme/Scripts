@@ -43,17 +43,12 @@ def live_link(url:str):
 def save_link(url:str):
     save_url = None
     if live_link(url):
+        saver = checkpoint(url, user_agent="Mozilla/5.0 (Windows NT 5.1; rv:40.0) Gecko/20100101 Firefox/40.0")
         try:
-            saver = checkpoint(url, user_agent="Mozilla/5.0 (Windows NT 5.1; rv:40.0) Gecko/20100101 Firefox/40.0")
-            try:
-                save_url = saver.save(9)
-                time.sleep(10)
-                if save_url is None:
-                    save_url = saver.saved_archive
-            except Exception as e:
-                print(f"Issue with saving the link {url}: {e}")
-                pass
-                    pass
+            save_url = saver.save(9)
+            time.sleep(10)
+            if save_url is None:
+                save_url = saver.saved_archive
         except Exception as e:
             print(f"Issue with saving the link {url}: {e}")
             pass
