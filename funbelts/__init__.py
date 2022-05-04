@@ -45,7 +45,7 @@ def save_link(url:str):
     if live_link(url):
         saver = checkpoint(url, user_agent="Mozilla/5.0 (Windows NT 5.1; rv:40.0) Gecko/20100101 Firefox/40.0")
         try:
-            save_url = saver.save(9)
+            save_url = saver.save()
             time.sleep(10)
             if save_url is None:
                 save_url = saver.saved_archive
