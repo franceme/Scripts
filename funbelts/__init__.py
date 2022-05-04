@@ -799,7 +799,7 @@ class GRepo(object):
             # https://github.com/owner/reponame/archive/hash.zip
             url_builder += f"/{self.commit}.zip"
 
-        if is_not_empty(self.commit):
+        if not is_not_empty(self.commit):
             # https://web.archive.org/save/https://github.com/owner/reponame/archive/refs/heads/tag.zip
             url_builder += f"/refs/heads"
             if is_not_empty(self.tag):
