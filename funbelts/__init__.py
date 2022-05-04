@@ -802,7 +802,7 @@ class GRepo(object):
         if not is_not_empty(self.commit):
             # https://web.archive.org/save/https://github.com/owner/reponame/archive/refs/heads/tag.zip
             url_builder += f"/refs/heads"
-            if is_not_empty(self.tag):
+            if not is_not_empty(self.tag):
                 for base_branch in ['master', 'main']:
                     temp_url = url_builder + f"/{base_branch}.zip"
                     if live_link(temp_url):
