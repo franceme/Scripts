@@ -337,7 +337,10 @@ if __name__ == '__main__':
 			f"{docker} kill $({docker} ps -q)",
 			f"{docker} rm $({docker} ps -a -q)",
 			f"{docker} rmi $({docker} images -q)",
-			f"docker volume rm $(docker volume ls -q)"
+			f"docker volume rm $(docker volume ls -q)",
+			f"{docker} image prune -f",
+			f"{docker} container prune -f",
+			f"{docker} builder prune -f -a"
 		]
 	elif command == "stop":
 		cmds = [f"{docker} kill $({docker} ps -a -q)"]

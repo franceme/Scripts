@@ -795,21 +795,21 @@ class GRepo(object):
 
         # url_builder = "https://web.archive.org/save/" + repo.url + "/archive"
         url_builder = self.url + "/archive"
-        if self.commit is not None:
+        if is_not_empty(self.commit):
             # https://github.com/owner/reponame/archive/hash.zip
             url_builder += f"/{self.commit}.zip"
 
-        if self.commit is None:
+        if is_not_empty(self.commit):
             # https://web.archive.org/save/https://github.com/owner/reponame/archive/refs/heads/tag.zip
             url_builder += f"/refs/heads"
-            if self.tag is None:
+            if is_not_empty(self.tag):
                 for base_branch in ['master', 'main']:
                     temp_url = url_builder + f"/{base_branch}.zip"
                     if live_link(temp_url):
                         url_builder = temp_url
                         break
                     time.sleep(4)
-            elif self.tag is not None:
+            elif is_not_empty(self.tag):
                 url_builder += f"/{self.tag}.zip"
 
         self.zip_url_base = url_builder
