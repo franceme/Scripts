@@ -53,7 +53,21 @@ def save_link(url:str):
             print(f"Issue with saving the link {url}: {e}")
             pass
     return save_url
-    
+
+def zip_from_archive(url:str, file_name:str="tmp.zip"):
+    if not file_name.endswith(".zip"):
+        file_name += ".zip"
+
+    if "web.archive.org" in url and live_link(url):
+        try:
+            new_url = url.replace('/https://','if_/https://')
+            req = requests.get(new_url)
+            open(file_name,"wb").write(req.content)
+        except Exception as e:
+            print(f"Exception :> {e}")
+
+    return file_name
+
 
 def str_to_base64(string, password:bool=False, encoding:str='utf-8'):
     current = base64.b64encode(string.encode(encoding))
