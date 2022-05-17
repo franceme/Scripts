@@ -650,19 +650,25 @@ class xcyl(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        zyp_name = self.filename + ".zip"
-        for key,value in self.cur_data_sets.items():
-            value.to_csv(str(key) + ".csv")
-            #os.system(f"7z a {zyp_name} {key}.csv -sdel")
-
-        with pd.ExcelWriter(self.filename, engine="xlsxwriter") as writer:
-            for itr, (key, value) in enumerate(self.cur_data_sets.items()):
-                value.to_excel(writer, sheet_name=key, startrow=1, header=False, index=False)
-                worksheet = writer.sheets[key]
-                (max_row, max_col) = value.shape
-                worksheet.add_table(0, 0, max_row, max_col - 1,
+        try:
+            if os.path.exists(self.filename):
+                for key,value in self.cur_data_sets.items():
+                    append_to_excel(self.filename,value,key)
+            else:
+                with pd.ExcelWriter(self.filename, engine="xlsxwriter") as writer:
+                    for itr, (key, value) in enumerate(self.cur_data_sets.items()):
+                        value.to_excel(writer, sheet_name=key, startrow=1, header=False, index=False)
+                        worksheet = writer.sheets[key]
+                        (max_row, max_col) = value.shape
+                        worksheet.add_table(0, 0, max_row, max_col - 1,
                                     {'columns': [{'header': column} for column in value.columns]})
-                worksheet.set_column(0, max_col - 1, 12)
+                        worksheet.set_column(0, max_col - 1, 12)
+        except:
+            zyp_name = self.filename + ".zip"
+            for key,value in self.cur_data_sets.items():
+                value.to_csv(str(key) + ".csv")
+                #os.system(f"7z a {zyp_name} {key}.csv -sdel")
+
         return self
 
     def addr(self, sheet_name, dataframe):
@@ -670,6 +676,8 @@ class xcyl(object):
             sheet_name += "_"
         self.cur_data_sets[sheet_name] = dataframe
         return self
+    def add_frame(self,sheet_name,dataframe):
+        self.addr(sheet_name,dataframe)
     def sanity(self):
         return True
 
