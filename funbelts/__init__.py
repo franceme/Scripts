@@ -477,15 +477,33 @@ class SqliteConnect(object):
         self.table_name = "dataset"
         self.echo = echo
         self.connection_string = f"sqlite:///{self.file_name}"
+        self.dataframes = {}
+
     def __enter__(self):
+        existed = os.path.exists(file_name)
         self.engine = create_engine(self.connection_string, echo=self.echo)
         self.connection = self.engine.connect()
+
+        if existed:
+            current_cursor = self.connection.cursor()
+            current_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
+            for name,_ in current_cursor.fetchall():
+                self.dataframes[name] = pd.read_sql_query(f"SELECT * FROM {name}", self.connection) 
+
+            current_cursor = None
+
         return self
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
         return self
+
     def add_pandaframe(self, dataframe, sheet_name:str=None):
+        while sheet_name in self.dataframes.keys():
+            sheet_name = sheet_name + "_"
+        self.dataframes[sheet_name] = dataframe
         dataframe.to_sql(sheet_name, self.connection)
+
     def add_excel(self,fileName):
         dataframes = {}
         try:
@@ -494,14 +512,18 @@ class SqliteConnect(object):
         except Exception as e:
             print(e)
             print(f"Issue parsing the dataframe file: {fileName}")
-            dataframes = {}
             pass
         [self.add_pandaframe(frame, key) for key,frame in dataframes.items()]
+
     def to_excel(self,filename):
         try:
             with xcyl(filename) as writer:
-                for table_name in self.connection.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall():
-                    writer.addr(table_name[0],pd.read_sql_query(f"SELECT * FROM {table_name};",self.connection))
+                if self.dataframes == {}:
+                    for table_name in self.connection.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall():
+                        writer.addr(table_name[0],pd.read_sql_query(f"SELECT * FROM {table_name};",self.connection))
+                else:
+                    for key,value in self.dataframes.items():
+                        writer.addr(key,value)
         except Exception as e:
             print(e)
 
