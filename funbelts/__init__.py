@@ -30,6 +30,16 @@ from github import Github
 import base64
 from cryptography.fernet import Fernet
 
+def flatten_list(lyst: list) -> list:
+    if not lyst:
+        return []
+
+    big_list = len(lyst) > 1
+    if isinstance(lyst[0], list):
+        return flatten_list(lyst[0]) + (big_list * flatten_list(lyst[1:]))
+    else:
+        return [lyst[0]] + (big_list * flatten_list(lyst[1:]))
+
 def live_link(url:str):
     response = False
     try:
