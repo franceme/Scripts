@@ -170,10 +170,10 @@ if __name__ == '__main__':
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it -v \"`pwd`:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\""
 		]
-	elif command == "loadpy":
+	elif command == "lopy":
 		dockerName = "pydev"
 
-        rest = ' '.join(sys.argv).split("loadpy")[-1]
+		rest = ' '.join(sys.argv).split("loadpy")[-1]
 
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it -v \"`pwd`:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick -i {rest} \""
