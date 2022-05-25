@@ -205,10 +205,13 @@ def contains_dict(list_dicts, current_dict):
     return False
 
 def frame_dycts(frame):
+    """
     output = []
     for row in frame.itertuples():
         output += [row._asdict()]
     return output
+    """
+    return frame.to_dict('records')
 
 def pd_to_arr(frame):
     return frame_dycts(frame)
