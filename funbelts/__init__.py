@@ -695,7 +695,8 @@ class xcyl(object):
                         worksheet.add_table(0, 0, max_row, max_col - 1,
                                     {'columns': [{'header': column} for column in value.columns]})
                         worksheet.set_column(0, max_col - 1, 12)
-        except:
+        except Exception as e:
+            print(f"Exception :> {e}")
             zyp_name = self.filename + ".zip"
             for key,value in self.cur_data_sets.items():
                 value.to_csv(str(key) + ".csv")
