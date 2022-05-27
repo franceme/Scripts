@@ -182,7 +182,7 @@ def add_metrics(fwame, TP:str='TP',FP:str='FP',TN:str='TN',FN:str='FN', use_perc
     fwame['TS'] = prep(fwame[TP]/(fwame[TP]+fwame[FP]+fwame[FN]))
     fwame['Accuracy'] = prep((fwame[TP]+fwame[TN])/(fwame[TP]+fwame[FP]+fwame[TN]+fwame[FN]))
     fwame['PPCR'] = prep((fwame[TP]+fwame[FP])/(fwame[TP]+fwame[FP]+fwame[TN]+fwame[FN]))
-    fwame['F1'] = prep(2 * ((fwame['Precision'] * fwame['Recall'])/(fwame['Precision'] + fwame['Recall'])))
+    fwame['F1'] = prep(2 * ((fwame['Precision_PPV'] * fwame['Recall'])/(fwame['Precision_PPV'] + fwame['Recall'])))
     return fwame
 
 def compare_dicts(raw_dyct_one, raw_dyct_two):
