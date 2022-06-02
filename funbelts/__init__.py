@@ -683,11 +683,12 @@ class xcyl(object):
     """
     the new excel object
     """
-    def __init__(self,filename:str="TEMP_VALUE", values:dict = {}):
+    def __init__(self,filename:str="TEMP_VALUE", values:dict = {}, useIndex:bool=False):
         if not filename.endswith(".xlsx"):
             filename += ".xlsx"
         self.filename = filename
         self.cur_data_sets = values
+        self.useIndex = useIndex
         return None
 
     def __enter__(self):
@@ -701,7 +702,7 @@ class xcyl(object):
             else:
                 with pd.ExcelWriter(self.filename, engine="xlsxwriter") as writer:
                     for itr, (key, value) in enumerate(self.cur_data_sets.items()):
-                        value.to_excel(writer, sheet_name=key, startrow=1, header=False, index=False)
+                        value.to_excel(writer, sheet_name=key, startrow=1, header=False, index=self.useIndex)
                         worksheet = writer.sheets[key]
                         (max_row, max_col) = value.shape
                         worksheet.add_table(0, 0, max_row, max_col - 1,
