@@ -40,6 +40,15 @@ def flatten_list(lyst: list) -> list:
     else:
         return [lyst[0]] + (big_list * flatten_list(lyst[1:]))
 
+def json_set_check(obj):
+    """
+    json.dump(X,default=json_set_check)
+    https://stackoverflow.com/questions/22281059/set-object-is-not-json-serializable
+    """
+    if isinstance(obj, set):
+        return list(obj)
+    raise TypeError
+
 def live_link(url:str):
     response = False
     try:
