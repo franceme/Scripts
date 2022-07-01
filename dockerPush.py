@@ -170,6 +170,11 @@ if __name__ == '__main__':
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it -v \"`pwd`:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\""
 		]
+	elif command == "dive":
+        #https://github.com/wagoodman/dive
+		cmds = [
+			f"dive {getDockerImage(dockerName)}"
+		]
 	elif command == "lopy":
 		dockerName = "pydev"
 

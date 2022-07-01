@@ -671,7 +671,7 @@ def append_to_excel(fpath, df, sheet_name):
         with pd.ExcelWriter(fpath, mode="a", engine="openpyxl") as f:
             df.to_excel(f, sheet_name=sheet_name)
 
-        with pd.ExcelWriter(filename, engine="xlsxwriter") as writer:
+        with pd.ExcelWriter(fpath, engine="xlsxwriter") as writer:
             worksheet = writer.sheets[sheet_name]
             (max_row, max_col) = df.shape
             worksheet.add_table(0, 0, max_row, max_col - 1,{'columns': [{'header': column} for column in df.columns]})
