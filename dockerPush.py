@@ -173,6 +173,7 @@ if __name__ == '__main__':
 	elif command == "dive":
         #https://github.com/wagoodman/dive
 		cmds = [
+            f"{docker} pull {getDockerImage(dockerName)}",
 			f"dive {getDockerImage(dockerName)}"
 		]
 	elif command == "lopy":
