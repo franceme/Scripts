@@ -176,6 +176,12 @@ if __name__ == '__main__':
 			f"{docker} pull {getDockerImage(dockerName)}",
 			f"dive {getDockerImage(dockerName)}"
 		]
+	elif command == "buildr":
+		build_name = "running_name"
+		cmds = [
+			f"{docker} build -t {build_name} .",
+			f"{docker} run --rm -it -v \"`pwd`:/sync\" {build_name} /bin/bash"
+		]
 	elif command == "lopy":
 		dockerName = "pydev"
 
