@@ -112,7 +112,6 @@ if __name__ == '__main__':
 			dockerInDocker = f"--privileged=true -v /private/var/run/docker.sock:/var/run/docker.sock"
 		elif platform.system().lower() == "linux":
 			dockerInDocker = f"--privileged=true -v /var/run/docker.sock:/var/run/docker.sock"
-
 	cmds = []
 	if command == "push":
 		if len(sys.argv) != 4:
@@ -171,9 +170,10 @@ if __name__ == '__main__':
 			f"{docker} run {dockerInDocker} --rm -it -v \"`pwd`:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\""
 		]
 	elif command == "dive":
-        #https://github.com/wagoodman/dive
+		dockerName = sys.argv[2].strip()
+		#https://github.com/wagoodman/dive
 		cmds = [
-            f"{docker} pull {getDockerImage(dockerName)}",
+			f"{docker} pull {getDockerImage(dockerName)}",
 			f"dive {getDockerImage(dockerName)}"
 		]
 	elif command == "lopy":
