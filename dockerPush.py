@@ -158,19 +158,19 @@ if __name__ == '__main__':
 			f"{docker} rmi $({docker} images -q)"
 		]
 	elif command == "pylite":
-        dockerName = "frantzme/pythondev:lite"
+		dockerName = "frantzme/pythondev:lite"
 
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} "
 		]
 	elif command == "writelite":
-        dockerName = "frantzme/writer:lite"
+		dockerName = "frantzme/writer:lite"
 
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} "
 		]
 	elif command == "jlite":
-        dockerName = "frantzme/javadev:lite"
+		dockerName = "frantzme/javadev:lite"
 
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} "
