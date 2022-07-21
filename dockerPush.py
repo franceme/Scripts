@@ -12,11 +12,8 @@ sys		: used for exiting the system
 import os
 import sys
 import subprocess
-import shlex
 import platform
-import pwd
 import socket
-import argparse
 
 """
 sample forcing a docker container to run as su
@@ -31,10 +28,6 @@ def is_docker():
 	path = '/proc/self/cgroup'
 	return (os.path.exists('/.dockerenv') or os.path.isfile(path) and
 			any('docker' in line for line in open(path)))
-
-
-def user():
-	return str(pwd.getpwuid(os.getuid())[0])
 
 
 docker = "docker"
@@ -84,6 +77,7 @@ def getPorts(prefix="-p", ports=None):
 		output = f"{output} {prefix} {port}"
 	return output
 
+dir = '%cd' if sys.platform in ['win32','cygwin'] else '`pwd`'
 
 def getDockerImage(input):
 	if "/" not in input:
@@ -106,7 +100,6 @@ if __name__ == '__main__':
 	dockerInDocker = ""
 	if command.startswith(":"):
 		command = command.replace(':', '')
-		current_user = user()
 
 		if platform.system().lower() == "darwin":  #Mac
 			#dockerInDocker = f"--privileged=true -v /Users/{current_user}/.docker/run/docker.sock:/var/run/docker.sock"
@@ -136,7 +129,7 @@ if __name__ == '__main__':
 		ports = f"{getPorts()}" if len(
 			sys.argv) == 4 and sys.argv[3] == "port" else ""
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {getDockerImage(dockerName)}"
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)}"
 		]
 	elif command == "rep":
 		if len(sys.argv) != 3:
@@ -148,7 +141,7 @@ if __name__ == '__main__':
 			f"{docker} kill $({docker} ps -q)",
 			f"{docker} rm $({docker} ps -a -q)",
 			f"{docker} rmi $({docker} images -q)",
-			f"{docker} run {dockerInDocker} --rm -it -v \"`pwd`:/sync\" {getDockerImage(dockerName)}"
+			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)}"
 		]
 	elif command == "wrap":
 		if len(sys.argv) != 3 and len(sys.argv) != 4:
@@ -159,7 +152,7 @@ if __name__ == '__main__':
 		ports = f"{getPorts()}" if len(
 			sys.argv) == 4 and sys.argv[3] == "port" else ""
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {getDockerImage(dockerName)}",
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)}",
 			f"{docker} kill $({docker} ps -q)",
 			f"{docker} rm $({docker} ps -a -q)",
 			f"{docker} rmi $({docker} images -q)"
@@ -168,7 +161,7 @@ if __name__ == '__main__':
 		dockerName = "pydev"
 
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it -v \"`pwd`:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\""
+			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\""
 		]
 	elif command == "dive":
 		dockerName = sys.argv[2].strip()
@@ -181,7 +174,7 @@ if __name__ == '__main__':
 		build_name = "running_name"
 		cmds = [
 			f"{docker} build -t {build_name} .",
-			f"{docker} run --rm -it -v \"`pwd`:/sync\" {build_name} /bin/bash"
+			f"{docker} run --rm -it -v \"{dir}:/sync\" {build_name} /bin/bash"
 		]
 	elif command == "lopy":
 		dockerName = "pydev"
@@ -189,7 +182,7 @@ if __name__ == '__main__':
 		rest = ' '.join(sys.argv).split("lopy")[-1]
 
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it -v \"`pwd`:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick -i {rest} \""
+			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick -i {rest} \""
 		]
 	elif command == "blockly":
 		dockerName = "ml"
@@ -200,7 +193,7 @@ if __name__ == '__main__':
 		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
 
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {getDockerImage(dockerName)} blockly"
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} blockly"
 		]
 	elif command == "mll":
 		dockerName = "dagshub/ml-workspace"
@@ -220,7 +213,7 @@ if __name__ == '__main__':
 		dockerName = sys.argv[2].strip()
 
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it -v \"`pwd`:/sync\" {getDockerImage(dockerName)} ipython3"
+			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} ipython3"
 		]
 	elif command == "labpy":
 		dockerName = "pydev"
@@ -232,7 +225,7 @@ if __name__ == '__main__':
 		rest = f"jupyter lab --ip=0.0.0.0 --allow-root --port {dis_port} --notebook-dir=\"/sync/\""
 		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {getDockerImage(dockerName)} {rest}"
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
 		]
 	elif command == "jlab":
 		dockerName = "pydev"
@@ -245,7 +238,7 @@ if __name__ == '__main__':
 		rest = f"jupyter lab --ip=0.0.0.0 --allow-root --port {dis_port} --notebook-dir=\"/sync/\""
 		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" oneoffcoder/java-jupyter {rest}"# deepjavalibrary/jupyter {rest}"
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" oneoffcoder/java-jupyter {rest}"# deepjavalibrary/jupyter {rest}"
 		]
 	elif command == "lab":
 		if len(sys.argv) != 3:
@@ -260,7 +253,7 @@ if __name__ == '__main__':
 		rest = f"jupyter lab --ip=0.0.0.0 --allow-root --port {dis_port} --notebook-dir=\"/sync/\""
 		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {getDockerImage(dockerName)} {rest}"
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
 		]
 	elif command == "splunk":
 		dis_port = "8000"
@@ -269,7 +262,7 @@ if __name__ == '__main__':
 
 		ports = getPorts(ports=[f"{dis_port}:8000"])
 		cmds = [
-			f"docker run {ports} -v \"`pwd`:/sync\" -e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password' -v \"`pwd`:/sync\" splunk/splunk:latest"
+			f"docker run {ports} -v \"{dir}:/sync\" -e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password' -v \"{dir}:/sync\" splunk/splunk:latest"
 		]
 	elif command == "beaker":
 		dis_port = "8888"
@@ -278,7 +271,7 @@ if __name__ == '__main__':
 
 		ports = getPorts(ports=[f"{dis_port}:8888"])
 		cmds = [
-			f"docker run {ports} -v \"`pwd`:/sync\" -v \"`pwd`:/sync\" beakerx/beakerx"
+			f"docker run {ports} -v \"{dir}:/sync\" -v \"{dir}:/sync\" beakerx/beakerx"
 		]
 	elif command == "superset":
 		dis_port = "8088"
@@ -287,7 +280,7 @@ if __name__ == '__main__':
 
 		ports = getPorts(ports=[f"{dis_port}:8088"])
 		cmds = [
-			f"docker run {ports} -it -v \"`pwd`:/sync\" apache/superset:latest"
+			f"docker run {ports} -it -v \"{dir}:/sync\" apache/superset:latest"
 		]
 	elif command == "theia":
 		if len(sys.argv) != 3:
@@ -306,7 +299,7 @@ if __name__ == '__main__':
 
 		ports = getPorts(ports=[f"3000:{dis_port}"])
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {getDockerImage(dockerName)} {rest}"
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
 		]
 	elif command == "cmd":
 		if len(sys.argv) < 4:
@@ -342,7 +335,7 @@ if __name__ == '__main__':
 		rest = rest.replace("./", "/sync/")
 
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {getDockerImage(dockerName)} {rest}"
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
 		]
 	elif command == "mysql":
 		cmds = [
@@ -398,7 +391,7 @@ if __name__ == '__main__':
 		ports = f"{getPorts()}" if len(
 			sys.argv) == 4 and sys.argv[3] == "port" else ""
 		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {dockerName}",
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {dockerName}",
 			f"{docker} kill $({docker} ps |grep {dockerNameTwo}|awk '{{print $1}}')",
 			f"{docker} rmi $(docker images |grep {dockerNameTwo}|awk '{{print $3}}')"
 		]
