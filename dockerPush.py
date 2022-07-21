@@ -77,7 +77,7 @@ def getPorts(prefix="-p", ports=None):
 		output = f"{output} {prefix} {port}"
 	return output
 
-dir = '%cd' if sys.platform in ['win32','cygwin'] else '`pwd`'
+dir = '%cd%' if sys.platform in ['win32','cygwin'] else '`pwd`'
 
 def getDockerImage(input):
 	if "/" not in input:
