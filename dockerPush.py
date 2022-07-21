@@ -25,6 +25,7 @@ docker run --rm -u 0 -it -v `pwd`:/temp username/dockername
  > forcing the user id to be 0, the root id
 """
 
+lite = False
 
 def is_docker():
 	path = '/proc/self/cgroup'
@@ -200,6 +201,17 @@ if __name__ == '__main__':
 
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/sync\" {getDockerImage(dockerName)} blockly"
+		]
+	elif command == "mll":
+		dockerName = "dagshub/ml-workspace"
+
+		dis_port = "8080"
+		if not checkPort(dis_port):
+			dis_port = open_port()
+		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
+
+		cmds = [
+			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/workspace\" --env AUTHENTICATE_VIA_JUPYTER=\"mytoken\" {getDockerImage(dockerName)}"
 		]
 	elif command == "python" or command == "py":
 		if len(sys.argv) != 3:
