@@ -87,6 +87,8 @@ def getDockerImage(input):
 			output = f"{docker_username}/pytesting:latest"
 		else:
 			output = f"{docker_username}/{input}:latest"
+		if ":lite" in input:
+			output = output.replace(':latest',':lite')
 		return output
 	else:
 		return input
