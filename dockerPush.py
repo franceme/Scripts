@@ -88,7 +88,7 @@ def getDockerImage(input):
 		else:
 			output = f"{docker_username}/{input}:latest"
 		if ":lite" in input:
-			output = output.replace(':latest',':lite')
+			output = output.replace(':latest',':lite').replace(':lite:lite',':lite')
 		return output
 	else:
 		return input
