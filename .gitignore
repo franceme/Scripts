@@ -6,3 +6,9 @@ funbelts/__pycache__
 *.ipynb
 .run_logs.txt
 .DS_Store
+User/
+CachedExtensions/
+logs/
+machineid
+coder.json
+.idea

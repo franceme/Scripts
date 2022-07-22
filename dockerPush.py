@@ -275,6 +275,32 @@ if __name__ == '__main__':
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
 		]
+	elif command == "qodana-jvm":
+		dis_port = "8080"
+		if not checkPort(dis_port):
+			dis_port = open_port()
+
+		ports = getPorts(ports=[f"{dis_port}:8080"])
+
+		output_results = "qodana_jvm_results"
+		try:
+			os.system(f"mkdir {output_results}")
+		except:
+			pass
+
+		cmds = [
+			f"docker run {ports} --rm -it -v \"{dir}:/data/project/\" -v \"{output_results}:/data/results/\" jetbrains/qodana-jvm --show-report"
+		]
+	elif command == "qodana-py":
+		dis_port = "8080"
+		if not checkPort(dis_port):
+			dis_port = open_port()
+
+		ports = getPorts(ports=[f"{dis_port}:8080"])
+
+		cmds = [
+			f"docker run {ports} --rm -it -v \"{dir}:/data/project/\" jetbrains/qodana-python:2022.1-eap --show-report"
+		]
 	elif command == "splunk":
 		dis_port = "8000"
 		if not checkPort(dis_port):
