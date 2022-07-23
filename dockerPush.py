@@ -120,6 +120,11 @@ def clean():
 			f"{docker} builder prune -f -a"
 		]
 
+def base_run(dockername):
+	output =None
+	#output = f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} "
+	return output
+
 if __name__ == '__main__':
 	command = sys.argv[1].strip().lower()
 	dockerName = None
