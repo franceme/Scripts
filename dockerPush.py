@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+
 '''####################################
 #Version: 00.00
 #Version Numbering: Major.Minor
@@ -92,6 +93,19 @@ def getDockerImage(input):
 		return output
 	else:
 		return input
+
+
+def getArgs():
+	import argparse
+	parser = argparse.ArgumentParser("RustGround - Upload Contents of Rust files to the Rust playground, and grab their output")
+	parser.add_argument("command")
+    parser.add_argument("-d","--docker", help="The Docker image to be used", nargs=1, default="frantzme/pydev:latest")
+    parser.add_argument("-p","--ports", help="The ports to be exposed", narg="*", default=[])
+    parser.add_argument("--dind", help="Use Docker In Docker", action="store_true", default=False)
+	parser.add_argument("--detach", help="Run the docker imagr detached", action="store_true",default=False)
+	paraer.add_argument("--mount", help="mount the current directory to which virtual folder",default="/sync")
+    parser.add_argument("-n","--name", help="The name of the image",default="kinde")
+	return parser.parse_args()
 
 
 if __name__ == '__main__':
