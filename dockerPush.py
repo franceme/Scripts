@@ -107,6 +107,18 @@ def getArgs():
     parser.add_argument("-n","--name", help="The name of the image",default="kinde")
 	return parser.parse_args()
 
+def clean():
+	global docker
+	return [
+			f"{docker} kill $({docker} ps -a -q)",
+			f"{docker} kill $({docker} ps -q)",
+			f"{docker} rm $({docker} ps -a -q)",
+			f"{docker} rmi $({docker} images -q)",
+			f"{docker} volume rm $({docker} volume ls -q)",
+			f"{docker} image prune -f",
+			f"{docker} container prune -f",
+			f"{docker} builder prune -f -a"
+		]
 
 if __name__ == '__main__':
 	command = sys.argv[1].strip().lower()
