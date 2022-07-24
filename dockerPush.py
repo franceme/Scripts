@@ -65,16 +65,15 @@ def checkPort(port):
 	sock.close()
 	return result
 
-
-def getPorts(prefix="-p", ports=None):
+def getPort(ports=[]):
 	output = ""
 	if ports is None:
 		ports = []
 		for i in range(1):
 			dis_port = open_port()
 			ports += [f"{dis_port}:{dis_port}"]
-
 	for port in ports:
+        
 		output = f"{output} {prefix} {port}"
 	return output
 
@@ -120,12 +119,29 @@ def clean():
 			f"{docker} builder prune -f -a"
 		]
 
-def base_run(dockername):
-	output =None
-	#output = f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} "
-	return output
+def base_run(dockername, ports="", flags="", detatched=False, mount="/sync", dind=False, cmd=""):
+	if dind:
+		if platform.system().lower() == "darwin":  #Mac
+			#dockerInDocker = f"--privileged=true -v /Users/{current_user}/.docker/run/docker.sock:/var/run/docker.sock"
+			dockerInDocker = f"--privileged=true -v /private/var/run/docker.sock:/var/run/docker.sock"
+		elif platform.system().lower() == "linux":
+			dockerInDocker = f"--privileged=true -v /var/run/docker.sock:/var/run/docker.sock"
+	else:
+		dockerInDocker = ""
+
+	if detatched:
+		runner = "-d"
+	else:
+		runner = "-it"
+	
+	return f"{docker} run {dockerInDocker} --rm {runner} -v \"{dir}:{mount}\" {ports} {flags} {getDockerImage(dockerName)} {cmd}"
 
 if __name__ == '__main__':
+args = getArgs()
+if args.command[0] == "":
+
+
+
 	command = sys.argv[1].strip().lower()
 	dockerName = None
 	dockerID = None
