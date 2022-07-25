@@ -23,8 +23,6 @@ docker run --rm -u 0 -it -v `pwd`:/temp username/dockername
  > forcing the user id to be 0, the root id
 """
 
-lite = False
-
 def is_docker():
 	path = '/proc/self/cgroup'
 	return (os.path.exists('/.dockerenv') or os.path.isfile(path) and
@@ -42,11 +40,6 @@ docker_username = "frantzme"
 def run(cmd):
 	return str(subprocess.check_output(cmd, shell=True, text=True)).strip()
 
-
-loaded = [
-]
-
-
 def open_port():
 	"""
 	https://gist.github.com/jdavis/4040223
@@ -58,7 +51,6 @@ def open_port():
 
 	return port
 
-
 def checkPort(port):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	result = bool(sock.connect_ex(('127.0.0.1', int(port))))
@@ -66,44 +58,38 @@ def checkPort(port):
 	return result
 
 def getPort(ports=[]):
-	output = ""
-	if ports is None:
-		ports = []
-		for i in range(1):
-			dis_port = open_port()
-			ports += [f"{dis_port}:{dis_port}"]
-	for port in ports:
-        
-		output = f"{output} {prefix} {port}"
-	return output
+	return ' '.join([
+		f"-p {port if checkPort(port) else open_port()}:{port}" for port in ports
+	])
 
 dir = '%cd%' if sys.platform in ['win32','cygwin'] else '`pwd`'
 
 def getDockerImage(input):
 	if "/" not in input:
+		use_lite = ":lite" in input
 		if "pydev" in input:
 			output = f"{docker_username}/pythondev:latest"
 		elif "pytest" in input:
 			output = f"{docker_username}/pytesting:latest"
 		else:
 			output = f"{docker_username}/{input}:latest"
-		if ":lite" in input:
-			output = output.replace(':latest','')
+		if use_lite:
+			output = output.replace(':latest','') + ":lite"
 		return output
 	else:
 		return input
 
-
 def getArgs():
 	import argparse
-	parser = argparse.ArgumentParser("RustGround - Upload Contents of Rust files to the Rust playground, and grab their output")
-	parser.add_argument("command")
-    parser.add_argument("-d","--docker", help="The Docker image to be used", nargs=1, default="frantzme/pydev:latest")
-    parser.add_argument("-p","--ports", help="The ports to be exposed", narg="*", default=[])
-    parser.add_argument("--dind", help="Use Docker In Docker", action="store_true", default=False)
+	parser = argparse.ArgumentParser("Dcokerpush = useful utilities for running docker images")
+	parser.add_argument("-x","--command", help="The Docker image to be used", nargs=1, default="clean")
+	parser.add_argument("-d","--docker", help="The Docker image to be used", nargs=1, default="frantzme/pydev:latest")
+	parser.add_argument("-p","--ports", help="The ports to be exposed", nargs="*", default=[])
+	parser.add_argument("-c","--cmd", help="The cmd to be run", nargs="?", default="/bin/bash")
+	parser.add_argument("--dind", help="Use Docker In Docker", action="store_true", default=False)
 	parser.add_argument("--detach", help="Run the docker imagr detached", action="store_true",default=False)
-	paraer.add_argument("--mount", help="mount the current directory to which virtual folder",default="/sync")
-    parser.add_argument("-n","--name", help="The name of the image",default="kinde")
+	parser.add_argument("--mount", help="mount the current directory to which virtual folder",default="/sync")
+	parser.add_argument("-n","--name", help="The name of the image",default="kinde")
 	return parser.parse_args()
 
 def clean():
@@ -117,46 +103,164 @@ def clean():
 			f"{docker} image prune -f",
 			f"{docker} container prune -f",
 			f"{docker} builder prune -f -a"
-		]
+	]
 
-def base_run(dockername, ports="", flags="", detatched=False, mount="/sync", dind=False, cmd=""):
+def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash"):
 	if dind:
 		if platform.system().lower() == "darwin":  #Mac
-			#dockerInDocker = f"--privileged=true -v /Users/{current_user}/.docker/run/docker.sock:/var/run/docker.sock"
-			dockerInDocker = f"--privileged=true -v /private/var/run/docker.sock:/var/run/docker.sock"
+			dockerInDocker = "--privileged=true -v /private/var/run/docker.sock:/var/run/docker.sock"
 		elif platform.system().lower() == "linux":
-			dockerInDocker = f"--privileged=true -v /var/run/docker.sock:/var/run/docker.sock"
+			dockerInDocker = "--privileged=true -v /var/run/docker.sock:/var/run/docker.sock"
 	else:
 		dockerInDocker = ""
 
-	if detatched:
-		runner = "-d"
-	else:
-		runner = "-it"
-	
-	return f"{docker} run {dockerInDocker} --rm {runner} -v \"{dir}:{mount}\" {ports} {flags} {getDockerImage(dockerName)} {cmd}"
+	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{dir}:{mount}\" {getPort(ports)} {flags} {getDockerImage(dockerName)} {cmd}"
 
 if __name__ == '__main__':
-args = getArgs()
-if args.command[0] == "":
+	args, cmds, execute = getArgs(), [], True
+	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, args.cmd)
+	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y)
 
+	if args.command[0].strip() == "":
+		print("No command specified")
+		sys.exit(1)
+	elif args.command[0] == "run":
+		cmds += [
+			regrun(args.docker[0])
+		]
+	elif args.command[0] == "wrap":
+		cmds += [
+			base_run(args.docker[0], ports, "", args.detach, args.mount, args.dind, args.cmd)
+		] + clean()
+	elif args.command[0] == "pylite":
+		cmds += [
+			regrun("frantzme/pythondev:lite")
+		]
+	elif args.command[0] == "writelite":
+		cmds += [
+			regrun("frantzme/writer:lite")
+		]
+	elif args.command[0] == "jlite":
+		cmds += [
+			regrun("frantzme/javadev:lite")
+		]
+	elif args.command[0] == "mypy":
+		cmds += [
+			regcmd("frantzme/pythondev:latest", "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\"")
+		]
+	elif args.command[0] == "dive":
+		#https://github.com/wagoodman/dive
+		cmds += [
+			f"{docker} pull {getDockerImage(args.docker[0])}",
+			f"dive {getDockerImage(args.docker[0])}"
+		]
+	elif args.command[0] == "build":
+		cmds = [
+			f"{docker} build -t {args.name[0]} .",
+			f"{docker} run --rm -it -v \"{dir}:/sync\" {args.name[0]} {args.cmd}"
+		]
+	elif args.command[0] == "lopy":
+		cmds += [
+			base_run("frantzme/pythondev:latest", [], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick -i {args.cmd} \"")
+		]
+	elif args.command[0] == "blockly":
+		cmds += [
+			base_run("frantzme/ml:latest", ["5000"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "blockly")
+		]
+	elif args.command[0] == "mll":
+		cmds += [
+			base_run("dagshub/ml-workspace:latest", ["8080"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\"")
+		]
+	elif args.command[0] == "labpy":
+		cmds += [
+			base_run("frantzme/pythondev:latest", ["8888"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "jupyter lab --ip=0.0.0.0 --allow-root --port 8888 --notebook-dir=\"/sync/\"")
+		]
+	elif args.command[0] == "jlab":
+		cmds += [
+			base_run("oneoffcoder/java-jupyter", ["8675"], None,None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"")
+		]
+	elif args.command[0] == "lab":
+		cmds += [
+			base_run("frantzme/pythondev:latest", ["8675"], None, None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"")
+		]
+	elif args.command[0] == "qodana-jvm":
+		output_results = "qodana_jvm_results"
+		try:
+			os.system(f"mkdir {output_results}")
+		except:
+			pass
 
+		cmds += [
+			base_run("jetbrains/qodana-jvm", ["8080"], f"-v \"{output_results}:/data/results/\"  --show-report", "/data/project/", args.mount, args.dind, "/bin/bash")
+		]
+	elif args.command[0] == "qodana-py":
+		cmds += [
+			base_run("jetbrains/qodana-python:2022.1-eap", ["8080"], "--show-report", "/data/project/", args.mount, args.dind, "/bin/bash")
+		]
+	elif args.command[0] == "splunk":
+		cmds += [
+			base_run("splunk/splunk:latest", ["8000"], "-e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password'",None, args.mount, args.dind, "/bin/bash")
+		]
+	elif args.command[0] == "beaker":
+		cmds += [
+			base_run("beakerx/beakerx", ["8888"], None, args.detach, args.mount, args.dind, "/bin/bash")
+		]
+	elif args.command[0] == "superset":
+		cmds += [
+			base_run("apache/superset:latest", ["8088"], None, args.detach, args.mount, args.dind, "/bin/bash")
+		]
+	elif args.command[0] == "mysql":
+		cmds += [
+			base_run("mysql:latest", ["3306"], "-e MYSQL_ROOT_PASSWORD=root", args.detach, args.mount, args.dind, "/bin/bash")
+		]
+	elif args.command[0] == "load":
+		cmds += [
+			f"{docker} pull {getDockerImage(args.docker[0])}"
+		]
+	elif args.command[0] == "clean":
+		cmds += clean()
+	elif args.command[0] == "stop":
+		cmds += [f"{docker} kill $({docker} ps -a -q)"]
+	elif args.command[0] == "list":
+		cmds = [f"{docker} images"]
+	elif args.command[0] == "live":
+		cmds = [f"{docker} ps|awk '{{print $1, $3}}'"]
+	elif args.command[0] == "update":
+		containerID = run(f"{docker} ps |awk '{{print $1}}'|tail -1")
+		imageID = run(f"{docker} ps |awk '{{print $2}}'|tail -1")
 
-	command = sys.argv[1].strip().lower()
-	dockerName = None
-	dockerID = None
-	execute = True
-	dockerInDocker = ""
-	if command.startswith(":"):
-		command = command.replace(':', '')
+		cmds = [
+			f"{docker} commit {containerID} {imageID}",
+			f"{docker} push {imageID}"
+		]		
+	elif args.command[0] == "kill":
+		if len(sys.argv) != 3:
+			print("Please enter a docker name")
+			sys.exit(0)
 
-		if platform.system().lower() == "darwin":  #Mac
-			#dockerInDocker = f"--privileged=true -v /Users/{current_user}/.docker/run/docker.sock:/var/run/docker.sock"
-			dockerInDocker = f"--privileged=true -v /private/var/run/docker.sock:/var/run/docker.sock"
-		elif platform.system().lower() == "linux":
-			dockerInDocker = f"--privileged=true -v /var/run/docker.sock:/var/run/docker.sock"
-	cmds = []
-	if command == "push":
+		dockerName = getDockerImage(sys.argv[2].strip()).replace(':latest', '')
+		cmds = [
+			f"{docker} kill $({docker} ps |grep {getDockerImage()}|awk '{{print $1}}')",
+			f"{docker} rmi $(docker images |grep {dockerName}|awk '{{print $3}}')"
+		]
+	elif command == "loads":
+		for load in loaded:
+			cmds += [f"{docker} pull {getDockerImage(load)}"]
+	elif command == "loading":
+		loaded = sys.argv[2:]
+		for load in loaded:
+			cmds += [f"{docker} pull {getDockerImage(load)}"]
+
+	for x in cmds:
+		try:
+			print(f"> {x}")
+			if execute:
+				os.system(x)
+		except:
+			pass
+
+"""
+	elif command == "push":
 		if len(sys.argv) != 4:
 			print(
 				"Please enter the both the Docker Name and the running Docker ID"
@@ -168,212 +272,6 @@ if args.command[0] == "":
 		cmds = [
 			f"{docker} commit {dockerInDocker} {dockerID} {getDockerImage(dockerName)}",
 			f"{docker} push {getDockerImage(dockerName)}"
-		]
-	elif command == "run":
-		if len(sys.argv) != 3 and len(sys.argv) != 4:
-			print("Please enter the both the Docker Name")
-			sys.exit()
-
-		dockerName = sys.argv[2].strip()
-		ports = f"{getPorts()}" if len(
-			sys.argv) == 4 and sys.argv[3] == "port" else ""
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)}"
-		]
-	elif command == "rep":
-		if len(sys.argv) != 3:
-			print("Please enter the both the Docker Name")
-			sys.exit()
-
-		dockerName = sys.argv[2].strip()
-		cmds = [
-			f"{docker} kill $({docker} ps -q)",
-			f"{docker} rm $({docker} ps -a -q)",
-			f"{docker} rmi $({docker} images -q)",
-			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)}"
-		]
-	elif command == "wrap":
-		if len(sys.argv) != 3 and len(sys.argv) != 4:
-			print("Please enter the both the Docker Name")
-			sys.exit()
-
-		dockerName = sys.argv[2].strip()
-		ports = f"{getPorts()}" if len(
-			sys.argv) == 4 and sys.argv[3] == "port" else ""
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)}",
-			f"{docker} kill $({docker} ps -q)",
-			f"{docker} rm $({docker} ps -a -q)",
-			f"{docker} rmi $({docker} images -q)"
-		]
-	elif command == "pylite":
-		dockerName = "frantzme/pythondev:lite"
-
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} "
-		]
-	elif command == "writelite":
-		dockerName = "frantzme/writer:lite"
-
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} "
-		]
-	elif command == "jlite":
-		dockerName = "frantzme/javadev:lite"
-
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} "
-		]
-	elif command == "mypy":
-		dockerName = "pydev"
-
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\""
-		]
-	elif command == "dive":
-		dockerName = sys.argv[2].strip()
-		#https://github.com/wagoodman/dive
-		cmds = [
-			f"{docker} pull {getDockerImage(dockerName)}",
-			f"dive {getDockerImage(dockerName)}"
-		]
-	elif command == "buildr":
-		build_name = "running_name"
-		cmds = [
-			f"{docker} build -t {build_name} .",
-			f"{docker} run --rm -it -v \"{dir}:/sync\" {build_name} /bin/bash"
-		]
-	elif command == "lopy":
-		dockerName = "pydev"
-
-		rest = ' '.join(sys.argv).split("lopy")[-1]
-
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick -i {rest} \""
-		]
-	elif command == "blockly":
-		dockerName = "ml"
-
-		dis_port = "5000"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
-
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} blockly"
-		]
-	elif command == "mll":
-		dockerName = "dagshub/ml-workspace"
-
-		dis_port = "8080"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
-
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"`pwd`:/workspace\" --env AUTHENTICATE_VIA_JUPYTER=\"mytoken\" {getDockerImage(dockerName)}"
-		]
-	elif command == "python" or command == "py":
-		if len(sys.argv) != 3:
-			print("Please enter the Docker Name")
-			sys.exit()
-		dockerName = sys.argv[2].strip()
-
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it -v \"{dir}:/sync\" {getDockerImage(dockerName)} ipython3"
-		]
-	elif command == "labpy":
-		dockerName = "pydev"
-
-		dis_port = "8675"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-
-		rest = f"jupyter lab --ip=0.0.0.0 --allow-root --port {dis_port} --notebook-dir=\"/sync/\""
-		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
-		]
-	elif command == "jlab":
-		dockerName = "pydev"
-
-		dis_port = "8675"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-
-		#rest = f"jupyter lab --ip=0.0.0.0 --allow-root --port {dis_port} --notebook-dir=\"/sync/\""
-		rest = f"jupyter lab --ip=0.0.0.0 --allow-root --port {dis_port} --notebook-dir=\"/sync/\""
-		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" oneoffcoder/java-jupyter {rest}"# deepjavalibrary/jupyter {rest}"
-		]
-	elif command == "lab":
-		if len(sys.argv) != 3:
-			print("Please enter the Docker Name")
-			sys.exit()
-		dockerName = sys.argv[2].strip()
-
-		dis_port = "8675"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-
-		rest = f"jupyter lab --ip=0.0.0.0 --allow-root --port {dis_port} --notebook-dir=\"/sync/\""
-		ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
-		]
-	elif command == "qodana-jvm":
-		dis_port = "8080"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-
-		ports = getPorts(ports=[f"{dis_port}:8080"])
-
-		output_results = "qodana_jvm_results"
-		try:
-			os.system(f"mkdir {output_results}")
-		except:
-			pass
-
-		cmds = [
-			f"docker run {ports} --rm -it -v \"{dir}:/data/project/\" -v \"{output_results}:/data/results/\" jetbrains/qodana-jvm --show-report"
-		]
-	elif command == "qodana-py":
-		dis_port = "8080"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-
-		ports = getPorts(ports=[f"{dis_port}:8080"])
-
-		cmds = [
-			f"docker run {ports} --rm -it -v \"{dir}:/data/project/\" jetbrains/qodana-python:2022.1-eap --show-report"
-		]
-	elif command == "splunk":
-		dis_port = "8000"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-
-		ports = getPorts(ports=[f"{dis_port}:8000"])
-		cmds = [
-			f"docker run {ports} -v \"{dir}:/sync\" -e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password' -v \"{dir}:/sync\" splunk/splunk:latest"
-		]
-	elif command == "beaker":
-		dis_port = "8888"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-
-		ports = getPorts(ports=[f"{dis_port}:8888"])
-		cmds = [
-			f"docker run {ports} -v \"{dir}:/sync\" -v \"{dir}:/sync\" beakerx/beakerx"
-		]
-	elif command == "superset":
-		dis_port = "8088"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-
-		ports = getPorts(ports=[f"{dis_port}:8088"])
-		cmds = [
-			f"docker run {ports} -it -v \"{dir}:/sync\" apache/superset:latest"
 		]
 	elif command == "theia":
 		if len(sys.argv) != 3:
@@ -394,6 +292,7 @@ if args.command[0] == "":
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
 		]
+
 	elif command == "cmd":
 		if len(sys.argv) < 4:
 			print("Please enter the both the Docker Name")
@@ -430,83 +329,9 @@ if args.command[0] == "":
 		cmds = [
 			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
 		]
-	elif command == "mysql":
-		cmds = [
-			f"docker run --rm -it --name root  -p 3306:3306  -e MYSQL_ROOT_PASSWORD=root  mysql:latest"
-		]
-	elif command == "load":
-		if len(sys.argv) != 3:
-			print("Please enter the Docker Name")
-			sys.exit()
 
-		dockerName = sys.argv[2].strip()
-		cmds += [f"{docker} pull {getDockerImage(dockerName)}"]
-	elif command == "loads":
-		for load in loaded:
-			cmds += [f"{docker} pull {getDockerImage(load)}"]
-	elif command == "loading":
-		loaded = sys.argv[2:]
-
-		for load in loaded:
-			cmds += [f"{docker} pull {getDockerImage(load)}"]
-	elif command == "clean":
-		cmds = [
-			f"{docker} kill $({docker} ps -a -q)",
-			f"{docker} kill $({docker} ps -q)",
-			f"{docker} rm $({docker} ps -a -q)",
-			f"{docker} rmi $({docker} images -q)",
-			f"docker volume rm $(docker volume ls -q)",
-			f"{docker} image prune -f",
-			f"{docker} container prune -f",
-			f"{docker} builder prune -f -a"
-		]
-	elif command == "stop":
-		cmds = [f"{docker} kill $({docker} ps -a -q)"]
-	elif command == "list":
-		cmds = [f"{docker} images"]
-	elif command == "live":
-		cmds = [f"{docker} ps|awk '{{print $1, $3}}'"]
-	elif command == "update":
-		containerID = run(f"docker ps |awk '{{print $1}}'|tail -1")
-		imageID = run(f"docker ps |awk '{{print $2}}'|tail -1")
-
-		cmds = [
-			f"{docker} commit {containerID} {imageID}",
-			f"{docker} push {imageID}"
-		]
-	elif command == "wrapthis":
-		if len(sys.argv) != 3 and len(sys.argv) != 4:
-			print("Please enter the both the Docker Name")
-			sys.exit()
-
-		dockerName = getDockerImage(sys.argv[2].strip())
-		dockerNameTwo = dockerName.replace(':latest', '')
-		ports = f"{getPorts()}" if len(
-			sys.argv) == 4 and sys.argv[3] == "port" else ""
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {dockerName}",
-			f"{docker} kill $({docker} ps |grep {dockerNameTwo}|awk '{{print $1}}')",
-			f"{docker} rmi $(docker images |grep {dockerNameTwo}|awk '{{print $3}}')"
-		]
-	elif command == "kill":
-		if len(sys.argv) != 3:
-			print("Please enter a docker name")
-			sys.exit(0)
-
-		dockerName = getDockerImage(sys.argv[2].strip()).replace(':latest', '')
-		cmds = [
-			f"{docker} kill $({docker} ps |grep {dockerName}|awk '{{print $1}}')",
-			f"{docker} rmi $(docker images |grep {dockerName}|awk '{{print $3}}')"
-		]
 	elif command == "telegram":
 		cmds = [
 			f"{docker} run -ti weibeld/ubuntu-telegram-cli bin/telegram-cli"
 		]
-
-	for x in cmds:
-		try:
-			print(f"> {x}")
-			if execute:
-				os.system(x)
-		except:
-			pass
+"""

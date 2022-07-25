@@ -1,4 +1,6 @@
 .ipynb_checkpoints
+.devcontainer/
+.vscode/
 dist/
 *.egg-info/
 funbelts/.ipynb_checkpoints
