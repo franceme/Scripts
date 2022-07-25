@@ -144,6 +144,10 @@ if __name__ == '__main__':
 		cmds += [
 			regrun("frantzme/javadev:lite")
 		]
+	elif args.command[0] == "netdata" and False: #Need to figure out
+		cmds += [
+			base_run("netdata/netdata:latest", ['19999'], f"-v netdataconfig:/etc/netdata -v netdatalib:/var/lib/netdata -v netdatacache:/var/cache/netdata -v /etc/passwd:/host/etc/passwd:ro -v /etc/group:/host/etc/group:ro -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /etc/os-release:/host/etc/os-release:ro {'--restart unless-stopped' if args.detach else ''} --cap-add SYS_PTRACE --security-opt apparmor=unconfined", args.detach, args.mount, args.dind, "")
+		]
 	elif args.command[0] == "mypy":
 		cmds += [
 			regcmd("frantzme/pythondev:latest", "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\"")
