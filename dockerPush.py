@@ -243,7 +243,7 @@ if __name__ == '__main__':
 			f"{docker} kill $({docker} ps |grep {getDockerImage()}|awk '{{print $1}}')",
 			f"{docker} rmi $(docker images |grep {dockerName}|awk '{{print $3}}')"
 		]
-	elif command == "loads":
+	elif args.command[0] == "loads":
 		for load in args.docker:
 			cmds += [f"{docker} pull {getDockerImage(load)}"]
 
