@@ -83,7 +83,7 @@ def getArgs():
 	import argparse
 	parser = argparse.ArgumentParser("Dcokerpush = useful utilities for running docker images")
 	parser.add_argument("-x","--command", help="The Docker image to be used", nargs=1, default="clean")
-	parser.add_argument("-d","--docker", help="The Docker image to be used", nargs=1, default="frantzme/pydev:latest")
+	parser.add_argument("-d","--docker", help="The Docker image to be used", nargs='*', default="frantzme/pydev:latest")
 	parser.add_argument("-p","--ports", help="The ports to be exposed", nargs="*", default=[])
 	parser.add_argument("-c","--cmd", help="The cmd to be run", nargs="?", default="/bin/bash")
 	parser.add_argument("--dind", help="Use Docker In Docker", action="store_true", default=False)
@@ -244,11 +244,7 @@ if __name__ == '__main__':
 			f"{docker} rmi $(docker images |grep {dockerName}|awk '{{print $3}}')"
 		]
 	elif command == "loads":
-		for load in loaded:
-			cmds += [f"{docker} pull {getDockerImage(load)}"]
-	elif command == "loading":
-		loaded = sys.argv[2:]
-		for load in loaded:
+		for load in args.docker:
 			cmds += [f"{docker} pull {getDockerImage(load)}"]
 
 	for x in cmds:
