@@ -63,6 +63,9 @@ def selfArg(string):
 
 if selfArg('install'):
 	sys.exit(os.system('python3 -m pip install -e .'))
+elif selfArg('patch'):
+	grab_version(True)
+	sys.exit(0)
 elif selfArg('upload'):
 	grab_version(True)
 	sys.exit(os.system(f"{sys.executable} setup.py sdist && {sys.executable} -m twine upload --skip-existing dist/*"))

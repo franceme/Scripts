@@ -217,7 +217,7 @@ if __name__ == '__main__':
 		cmds += [
 			base_run("mysql:latest", ["3306"], "-e MYSQL_ROOT_PASSWORD=root", args.detach, args.mount, args.dind, "/bin/bash")
 		]
-	elif args.command[0] == "load":
+	elif args.command[0] in ["load","pull"]:
 		cmds += [
 			f"{docker} pull {getDockerImage(args.docker[0])}"
 		]
@@ -247,14 +247,14 @@ if __name__ == '__main__':
 			f"{docker} kill $({docker} ps |grep {getDockerImage()}|awk '{{print $1}}')",
 			f"{docker} rmi $(docker images |grep {dockerName}|awk '{{print $3}}')"
 		]
-	elif args.command[0] == "loads":
+	elif args.command[0] in ["loads","pulls"]:
 		for load in args.docker:
 			cmds += [f"{docker} pull {getDockerImage(load)}"]
 
 	for x in cmds:
 		try:
 			print(f"> {x}")
-			if execute:
+			if False and execute:
 				os.system(x)
 		except:
 			pass
