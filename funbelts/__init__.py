@@ -9,6 +9,7 @@ from sqlite3 import connect
 from glob import glob
 from copy import deepcopy as dc
 import functools
+from zlib import compress
 import httplib2
 import six
 from waybackpy import WaybackMachineSaveAPI as checkpoint

@@ -1,0 +1,67 @@
+name: "Upload"
+
+on:
+  workflow_dispatch:
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "master" ]
+  push:
+    branches: [ "master" ]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Build the executable
+      run: python3 -m pip install twine && python3 setup.py sdist && ./setup.py patch
+
+    - name: Publish a Python distribution to PyPI
+      #if: github.event_name == 'push'
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
+
+
+    - uses: EndBug/add-and-commit@v9 # You can change this to use a specific version.
+      if: false
+      with:
+        add: 'setup.py'
+        author_name: franceme
+        # author_email: mail@example.com
+        commit: Updating the version
+        # The local path to the directory where your repository is located. You should use actions/checkout first to set it up.
+        # Default: '.'
+        # cwd: './path/to/the/repo'
+
+        # Determines the way the action fills missing author name and email. Three options are available:
+        # - github_actor -> UserName <UserName@users.noreply.github.com>
+        # - user_info -> Your Display Name <your-actual@email.com>
+        # - github_actions -> github-actions <email associated with the github logo>
+        # Default: github_actor
+        default_author: github_actor
+
+        # The message for the commit.
+        # Default: 'Commit from GitHub Actions (name of the workflow)'
+        message: 'Updating the version'
+
+        # Arguments for the git pull command. By default, the action does not pull.
+        # Default: ''
+        pull: '--rebase --autostash ...'
+
+        # Whether to push the commit and, if any, its tags to the repo. It can also be used to set the git push arguments (see the paragraph below for more info)
+        # Default: true
+        push: true
+
+    - name: Repository Dispatch
+      uses: peter-evans/repository-dispatch@v1
+      with:
+        token: ${{ secrets.REPO_ACCESS_TOKEN }}
+        repository: franceme/py_scripts
+        event-type: scripts_build
+        client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'
