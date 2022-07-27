@@ -260,7 +260,7 @@ if __name__ == '__main__':
 	for x in cmds:
 		try:
 			print(f"> {x}")
-			if False and execute:
+			if execute:
 				os.system(x)
 		except:
 			pass
