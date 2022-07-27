@@ -58,6 +58,8 @@ def checkPort(port):
 	return result
 
 def getPort(ports=[]):
+	if ports is None or ports == []:
+		return ''
 	return ' '.join([
 		f"-p {port if checkPort(port) else open_port()}:{port}" for port in ports
 	])
@@ -85,7 +87,7 @@ def getArgs():
 	parser.add_argument("-x","--command", help="The Docker image to be used", nargs=1, default="clean")
 	parser.add_argument("-d","--docker", help="The Docker image to be used", nargs='*', default="frantzme/pydev:latest")
 	parser.add_argument("-p","--ports", help="The ports to be exposed", nargs="*", default=[])
-	parser.add_argument("-c","--cmd", help="The cmd to be run", nargs="?", default="/bin/bash")
+	parser.add_argument("-c","--cmd", help="The cmd to be run", nargs="*", default="/bin/bash")
 	parser.add_argument("--dind", help="Use Docker In Docker", action="store_true", default=False)
 	parser.add_argument("--detach", help="Run the docker imagr detached", action="store_true",default=False)
 	parser.add_argument("--mount", help="mount the current directory to which virtual folder",default="/sync")
@@ -114,7 +116,7 @@ def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", din
 	else:
 		dockerInDocker = ""
 
-	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{dir}:{mount}\" {getPort(ports)} {flags} {getDockerImage(dockerName)} {cmd}"
+	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{dir}:{mount}\" {getPort(ports)} {flags or ''} {getDockerImage(dockerName)} {cmd or ''}"
 
 if __name__ == '__main__':
 	args, cmds, execute = getArgs(), [], True
@@ -130,7 +132,7 @@ if __name__ == '__main__':
 		]
 	elif args.command[0] == "wrap":
 		cmds += [
-			base_run(args.docker[0], ports, "", args.detach, args.mount, args.dind, args.cmd)
+			base_run(args.docker[0], args.ports, "", args.detach, args.mount, args.dind, args.cmd)
 		] + clean()
 	elif args.command[0] == "pylite":
 		cmds += [
@@ -186,6 +188,10 @@ if __name__ == '__main__':
 	elif args.command[0] == "lab":
 		cmds += [
 			base_run("frantzme/pythondev:latest", ["8675"], None, None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"")
+		]
+	elif args.command[0] == "cmd":
+		cmds += [
+			base_run(args.docker[0], args.ports, None, None, args.mount, args.dind, ' '.join(args.cmd))
 		]
 	elif args.command[0] == "qodana-jvm":
 		output_results = "qodana_jvm_results"
