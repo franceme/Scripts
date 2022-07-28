@@ -111,7 +111,7 @@ def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", din
 	if dind:
 		if platform.system().lower() == "darwin":  #Mac
 			dockerInDocker = "--privileged=true -v /private/var/run/docker.sock:/var/run/docker.sock"
-		elif platform.system().lower() == "linux":
+		else: #if platform.system().lower() == "linux":
 			dockerInDocker = "--privileged=true -v /var/run/docker.sock:/var/run/docker.sock"
 	else:
 		dockerInDocker = ""
@@ -188,6 +188,15 @@ if __name__ == '__main__':
 	elif args.command[0] == "lab":
 		cmds += [
 			base_run("frantzme/pythondev:latest", ["8675"], None, None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"")
+		]
+	elif args.command[0] == "sos":
+		cmds += [
+			base_run("vatlab/sos-notebook", ["8678"], None, None, "/home/jovyan/work", args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8678")
+		]
+	elif args.command[0] == "polynote":
+		#https://github.com/polynote/polynote/blob/master/docker/README.md
+		cmds += [
+			base_run("polynote/polynote:latest", ["8192"], None, None, "/opt/notebooks/", args.dind, f"-p 127.0.0.1:8192:8192 -p 127.0.0.1:4040-4050:4040-4050")
 		]
 	elif args.command[0] == "cmd":
 		cmds += [
