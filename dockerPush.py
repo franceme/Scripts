@@ -196,7 +196,11 @@ if __name__ == '__main__':
 	elif args.command[0] == "polynote":
 		#https://github.com/polynote/polynote/blob/master/docker/README.md
 		cmds += [
-			base_run("polynote/polynote:latest", ["8192"], None, None, "/opt/notebooks/", args.dind, f"-p 127.0.0.1:8192:8192 -p 127.0.0.1:4040-4050:4040-4050")
+			base_run("polynote/polynote:latest", ["8192"], None, None, "data", args.dind, f"-p 127.0.0.1:8192:8192 -p 127.0.0.1:4040-4050:4040-4050")
+		]
+	elif args.command[0] == "polynote2":
+		cmds += [
+			base_run("xtreamsrl/polynote-docker", ["8192"],None, args.detach,"/data", args.dind, args.cmd)
 		]
 	elif args.command[0] == "cmd":
 		cmds += [
