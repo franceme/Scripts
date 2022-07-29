@@ -29,7 +29,12 @@ from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from github import Github
 import base64
-from cryptography.fernet import Fernet
+try:
+    from cryptography.fernet import Fernet
+except:
+    os.system(str(sys.executable) + " -m pip install cryptography")
+    from cryptography.fernet import Fernet
+
 
 def flatten_list(lyst: list) -> list:
     if not lyst:
