@@ -116,6 +116,9 @@ def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", din
 	else:
 		dockerInDocker = ""
 
+	if isinstance(cmd, list):
+		cmd = ' '.join(cmd)
+
 	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{dir}:{mount}\" {getPort(ports)} {flags or ''} {getDockerImage(dockerName)} {cmd or ''}"
 
 if __name__ == '__main__':
