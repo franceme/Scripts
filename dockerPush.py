@@ -140,8 +140,10 @@ if __name__ == '__main__':
 		resp = requests.get("https://rebrand.ly/pydock")
 		if resp.ok:
 			with finput(__file__,inplace=True) as foil:
-				for line in resp.text.split('\n'):
-					print(line)
+				for old_line in foil:
+					for line in resp.text.split('\n'):
+						print(line)
+					break
 	elif args.command[0] == "run":
 		cmds += [
 			regrun(args.docker[0])
