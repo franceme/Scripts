@@ -126,6 +126,19 @@ if __name__ == '__main__':
 	if args.command[0].strip() == "":
 		print("No command specified")
 		sys.exit(1)
+	elif args.command[0] == "update":
+		try:
+			import requests
+		except:
+			os.system(str(sys.executable) + " -m pip install requests")
+			import requests
+		from fileinput import FileInput as finput
+
+		resp = requests.get("https://rebrand.ly/pydock")
+		if resp.ok:
+			with finput(__file__,inplace=True) as foil:
+				for line in resp.text.split('\n'):
+					print(line)
 	elif args.command[0] == "run":
 		cmds += [
 			regrun(args.docker[0])
