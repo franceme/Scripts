@@ -87,7 +87,7 @@ def getArgs():
 	parser.add_argument("-x","--command", help="The Docker image to be used", nargs=1, default="clean")
 	parser.add_argument("-d","--docker", help="The Docker image to be used", nargs='*', default="frantzme/pydev:latest")
 	parser.add_argument("-p","--ports", help="The ports to be exposed", nargs="*", default=[])
-	parser.add_argument("-c","--cmd", help="The cmd to be run", nargs="*", default="/bin/bash")
+	parser.add_argument("-c","--cmd", help="The cmd to be run", nargs="*", default=["/bin/bash"])
 	parser.add_argument("--dind", help="Use Docker In Docker", action="store_true", default=False)
 	parser.add_argument("--detach", help="Run the docker imagr detached", action="store_true",default=False)
 	parser.add_argument("--mount", help="mount the current directory to which virtual folder",default="/sync")
