@@ -57,11 +57,11 @@ def checkPort(port):
 	sock.close()
 	return result
 
-def getPort(ports=[]):
+def getPort(ports=[], prefix="-p"):
 	if ports is None or ports == []:
 		return ''
 	return ' '.join([
-		f"-p {port if checkPort(port) else open_port()}:{port}" for port in ports
+		f"{prefix} {port if checkPort(port) else open_port()}:{port}" for port in ports
 	])
 
 dir = '%cd%' if sys.platform in ['win32','cygwin'] else '`pwd`'
@@ -121,6 +121,52 @@ def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", din
 
 	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{dir}:{mount}\" {getPort(ports)} {flags or ''} {getDockerImage(dockerName)} {cmd or ''}"
 
+def write_docker_compose(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",name="kinde"):
+	try:
+		from yaml import load, dump,safe_load
+	except:
+		os.system(str(sys.executable)+" -m pip install pyyaml")
+		from yaml import load, dump, safe_load
+	
+	try:
+		from yaml import CLoader as Loader, CDumper as Dumper
+	except ImportError:
+		from yaml import Loader, Dumper
+	from fileinput import FileInput as finput
+
+	print(os.path.exists("docker-compose.yml"))
+
+	if os.path.exists("docker-compose.yml"):
+		with open("docker-compose.yml", "r") as writer:
+			contents = safe_load(writer)
+	else:
+		contents = {
+			'services': {}
+		}
+	
+	contents['services'][name] = {
+		'image': dockerName,
+		'privileged':dind,
+		'volumes': [
+			'./:'+str(mount)
+		],
+	}
+
+	if dind:
+		contents['services'][name]['volumes'] += ['/var/run/docker.sock:/var/run/docker.sock']
+
+	portz = [x for x in getPort(ports,prefix="").split(' ') if x.strip() != '']
+	if len(portz) >0:
+		contents['services'][name]['ports'] = portz
+
+	if cmd[0] is not None and cmd[0] != "/bin/bash":
+		contents['services'][name]['command'] = cmd[0]
+
+	with open("docker-compose.yml", "w+") as writer:
+		dump(contents, writer, default_flow_style=False)
+	
+	return "docker compose up " + str('-d' if detatched else '')
+
 if __name__ == '__main__':
 	args, cmds, execute = getArgs(), [], True
 	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, args.cmd)
@@ -144,6 +190,13 @@ if __name__ == '__main__':
 					for line in resp.text.split('\n'):
 						print(line)
 					break
+	elif args.command[0] == "pose":
+		write_docker_compose(getDockerImage(args.docker[0]), args.ports, "", args.detach, args.mount, args.dind, args.cmd, args.name)
+	elif args.command[0] == "poser":
+		cmds += [
+			write_docker_compose(getDockerImage(args.docker[0]), args.ports, "", args.detach, args.mount, args.dind, args.cmd,args.name),
+			"rm docker-compose.yml"
+		]
 	elif args.command[0] == "run":
 		cmds += [
 			regrun(args.docker[0])
