@@ -35,6 +35,27 @@ except:
     os.system(str(sys.executable) + " -m pip install cryptography")
     from cryptography.fernet import Fernet
 
+def is_docker():
+	path = '/proc/self/cgroup'
+	return (os.path.exists('/.dockerenv') or os.path.isfile(path) and
+			any('docker' in line for line in open(path)))
+
+def open_port():
+	"""
+	https://gist.github.com/jdavis/4040223
+	"""
+	sock = socket.socket()
+	sock.bind(('', 0))
+	x, port = sock.getsockname()
+	sock.close()
+
+	return port
+
+def checkPort(port):
+	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	result = bool(sock.connect_ex(('127.0.0.1', int(port))))
+	sock.close()
+	return result
 
 def flatten_list(lyst: list) -> list:
     if not lyst:
