@@ -169,11 +169,11 @@ def write_docker_compose(dockerName, ports=[], flags="", detatched=False, mount=
 
 if __name__ == '__main__':
 	args, cmds, execute = getArgs(), [], True
-	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, args.cmd)
+	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, ' '.join(args.cmd))
 	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y)
 
 	if args.command[0].strip() == "":
-		print("No command specified")
+		print("No command specified")s
 		sys.exit(1)
 	elif args.command[0] == "update":
 		try:
