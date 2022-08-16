@@ -173,7 +173,7 @@ if __name__ == '__main__':
 	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y)
 
 	if args.command[0].strip() == "":
-		print("No command specified")s
+		print("No command specified")
 		sys.exit(1)
 	elif args.command[0] == "update":
 		try:
