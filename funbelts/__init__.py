@@ -76,6 +76,18 @@ def json_set_check(obj):
         return list(obj)
     raise TypeError
 
+class Rollr(object):
+    def __init__(self):
+        self.tag = None
+    def __enter__(self):
+        print("[",end='',flush=True)
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("]")
+        return self
+    def step(self):
+        print(".",end='',flush=True)
+
 def live_link(url:str):
     response = False
     try:
@@ -792,30 +804,14 @@ def heatmap(frame, column, min_to_max:bool=False, output_frame_name:str=None):
             pass
     return output_frame
 
-class Steppr(object):
-    """
-    Sample usage:
-    with GRepo("https://github.com/owner/repo","v1","hash") as repo:
-        os.path.exists(repo.reponame) #TRUE
-    """
-    def __init__(self):
-        self.tag = None
-
-    def __enter__(self):
-        print("[",end='',flush=True)
-        return self
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        print("]")
-        return self
-    def step(self):
-        print(".",end='',flush=True)
 class GRepo(object):
     """
     Sample usage:
     with GRepo("https://github.com/owner/repo","v1","hash") as repo:
         os.path.exists(repo.reponame) #TRUE
     """
-    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False,local_dir:bool=False,logfile:str=".run_logs.txt",zip_url:str=None, jsonl_file:str=None):
+    def __init__(self, reponame:str, repo:str, tag:str=None, commit:str=None,delete:bool=True,silent:bool=True,write_statistics:bool=False,local_dir:bool=False,logfile:str=".run_logs.txt",zip_url:str=None, jsonl_file:str=None,
+    archive_log:str=None):
         self.delete = delete
         self.print = not silent
         self.out = lambda string:logg(logfile,string)
@@ -826,6 +822,7 @@ class GRepo(object):
         self.cloneurl = None
         self.zip_url_base = zip_url
         self.jsonl = jsonl_file
+        self.archive_log = archive_log
         if local_dir:
             self.url = "file://" + self.reponame
             self.full_url = repo
@@ -883,6 +880,10 @@ class GRepo(object):
         except Exception as e:
             if self.print:
                 self.out(f"Issue with writing the statistics: {e}")
+
+        if self.archive_log:
+            with open(self.archive_log,"a+") as writer:
+                writer.write(f"{self.reponame},{save_link(self.url)}\n")
 
         return self
     def get_info(self):
