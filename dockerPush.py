@@ -293,7 +293,7 @@ if __name__ == '__main__':
 		]
 	elif args.command[0] == "splunk":
 		cmds += [
-			base_run("splunk/splunk:latest", ["8000"], "-e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password'",None, args.mount, args.dind, "/bin/bash")
+			base_run("splunk/splunk:latest", ["8000"], "-e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password'",None, args.mount, args.dind, "start")
 		]
 	elif args.command[0] == "beaker":
 		cmds += [
