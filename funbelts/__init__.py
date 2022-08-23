@@ -594,6 +594,9 @@ class ephfile(object):
         if not os.path.exists(foil):
             os.system("touch " + str(foil))
         self.foil = foil
+    
+    def __call__(self):
+        return self.foil
 
     def __enter__(self):
         return self
