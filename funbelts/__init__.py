@@ -607,8 +607,25 @@ class HuggingFace(object):
         self.downloaded_files = []
 
     def open(self):
-        return
+        if isinstance(self.auth,str):
+            from pathlib import Path
+            hugging_face = f"{str(Path.home())}/.huggingface/"
+            
+            for cmd in [
+                f"mkdir -p {hugging_face}",
+                f"rm {hugging_face}/token",
+                f"touch {hugging_face}/token"
+            ]:
+                try:
+                    print(cmd);os.system(cmd)
+                except:
+                    pass
 
+            with open(f"{hugging_face}/token","a") as writer:
+                writer.write(self.auth)
+            self.auth = True
+
+        return
     def close(self):
         for foil in self.downloaded_files:
             try:
@@ -621,7 +638,6 @@ class HuggingFace(object):
                     print(e)
                     pass
         return
-
     def download(self, file_path=None,revision=None):
         #https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/file_download#huggingface_hub.hf_hub_download
         if file_path and isinstance(file_path,str):
@@ -634,7 +650,6 @@ class HuggingFace(object):
                 use_auth_token=self.auth
             )
         return None
-
     def upload(self, path=None,path_in_repo=None):
         if path:
             if isinstance(path,str) and os.path.isfile(path):
@@ -664,7 +679,6 @@ class HuggingFace(object):
             revision=revision,
             repo_type=self.repo_type
         )
-
     def __enter__(self):
         self.open()
         return self
