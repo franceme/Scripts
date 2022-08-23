@@ -679,6 +679,16 @@ class HuggingFace(object):
             revision=revision,
             repo_type=self.repo_type
         )
+    def delete_file(self,path_in_repo=None,revision=None):
+        # https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/hf_api#huggingface_hub.HfApi.delete_file
+        if path_in_repo:
+            self.api.delete_file(
+                path_in_repo=path_in_repo,
+                repo_id=self.repo_id,
+                repo_type=self.repo_type,
+                revision=revision
+            )
+        return False
     def __enter__(self):
         self.open()
         return self
@@ -692,16 +702,14 @@ class HuggingFace(object):
         return self.download(foil)
     def __setitem__(self,key,value):
         self.upload(value,key)
+    def __delitem__(self,item):
+        return self.delete_file(item)
     def __str__(self):
         return self.files()
     def __contains__(self, item):
         return item in self.files()
     def __call__(self,item):
-        return self.download(item) if item in self else None 
-
-        
-    
-
+        return self.download(item) if item in self else None
 
 class telegramBot(object):
     """
