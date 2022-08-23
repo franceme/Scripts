@@ -589,6 +589,25 @@ class SqliteConnect(object):
         except Exception as e:
             print(e)
 
+class ephfile(object):
+    def __init__(self,foil):
+        if not os.path.exists(foil):
+            os.system("touch " + str(foil))
+        self.foil = foil
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        try:
+            os.remove(self.foil)
+        except:
+            try:
+                os.system("yes|rm " + str(self.foil))
+            except Exception as e:
+                pass
+        return self
+
 class HuggingFace(object):
     def __init__(self,repo,repo_type="dataset",use_auth=True):
         """
