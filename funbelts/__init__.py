@@ -590,7 +590,7 @@ class SqliteConnect(object):
             print(e)
 
 class HuggingFace(object):
-    def __init__(self,repo,repo_type="dataset"):
+    def __init__(self,repo,repo_type="dataset",use_auth=True):
         """
         https://rebrand.ly/hugface
 
@@ -603,6 +603,7 @@ class HuggingFace(object):
         self.api = HfApi()
         self.repo = repo
         self.repo_type = repo_type
+        self.auth=use_auth
         self.downloaded_files = []
 
     def open(self):
@@ -622,14 +623,22 @@ class HuggingFace(object):
         return
 
     def download(self, file_path=None,revision=None):
+        #https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/file_download#huggingface_hub.hf_hub_download
         if file_path and isinstance(file_path,str):
             from huggingface_hub import hf_hub_download
-            return hf_hub_download(repo_id=self.repo, filename=file_path,revision=revision)
+            return hf_hub_download(
+                repo_id=self.repo,
+                filename=file_path,
+                revision=revision,
+                repo_type=self.repo_type,
+                use_auth_token=self.auth
+            )
         return None
 
     def upload(self, path=None,path_in_repo=None):
         if path:
             if isinstance(path,str) and os.path.isfile(path):
+                #https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/hf_api#huggingface_hub.HfApi.upload_file
                 self.api.upload_file(
                     path_or_fileobj=path,
                     path_in_repo=path_in_repo or path,
@@ -637,6 +646,7 @@ class HuggingFace(object):
                     repo_type=self.repo_type,
                 )
             elif isinstance(path,str) and os.path.isdir(path):
+                #https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/hf_api#huggingface_hub.HfApi.upload_folder
                 self.api.upload_file(
                     folder_path=path,
                     path_in_repo=path_in_repo or path,
