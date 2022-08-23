@@ -28,7 +28,7 @@ long_description = pathlib.Path(f"{here}/README.md").read_text(encoding='utf-8')
 REQUIRES_PYTHON = '>=3.8.0'
 RELEASE = "?"
 entry_point = f"{NAME}.{NAME}"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 def grab_version(update_patch:bool=False,update_minor:bool=False,update_major:bool=False):
 	update = any([update_patch,update_minor,update_major])
@@ -99,7 +99,9 @@ setup(
         "rich",
         "waybackpy",
         "requests",
-        "matplotlib"
+        "matplotlib",
+		"datasets",
+		"huggingface_hub"
 	],
 	include_package_data=True,
 	classifiers=[

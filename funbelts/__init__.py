@@ -29,6 +29,7 @@ from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from github import Github
 import base64
+import datasets
 try:
     from cryptography.fernet import Fernet
 except:
@@ -587,6 +588,95 @@ class SqliteConnect(object):
                         writer.addr(key,value)
         except Exception as e:
             print(e)
+
+class HuggingFace(object):
+    def __init__(self,repo,repo_type="dataset"):
+        """
+        https://rebrand.ly/hugface
+
+        https://huggingface.co/docs/huggingface_hub/quick-start
+        https://huggingface.co/docs/huggingface_hub/how-to-upstream
+        https://huggingface.co/docs/huggingface_hub/how-to-downstream
+        """
+        from huggingface_hub import HfApi
+
+        self.api = HfApi()
+        self.repo = repo
+        self.repo_type = repo_type
+        self.downloaded_files = []
+
+    def open(self):
+        return
+
+    def close(self):
+        for foil in self.downloaded_files:
+            try:
+                os.remove(foil)
+            except:
+                try:
+                    os.system("yes|rm " + str(foil))
+                except Exception as e:
+                    print("Failed to remove the cached file " +str(foil))
+                    print(e)
+                    pass
+        return
+
+    def download(self, file_path=None,revision=None):
+        if file_path and isinstance(file_path,str):
+            from huggingface_hub import hf_hub_download
+            return hf_hub_download(repo_id=self.repo, filename=file_path,revision=revision)
+        return None
+
+    def upload(self, path=None,path_in_repo=None):
+        if path:
+            if isinstance(path,str) and os.path.isfile(path):
+                self.api.upload_file(
+                    path_or_fileobj=path,
+                    path_in_repo=path_in_repo or path,
+                    repo_id=self.repo,
+                    repo_type=self.repo_type,
+                )
+            elif isinstance(path,str) and os.path.isdir(path):
+                self.api.upload_file(
+                    folder_path=path,
+                    path_in_repo=path_in_repo or path,
+                    repo_id=self.repo,
+                    repo_type=self.repo_type,
+                )
+            else:
+                print("Entered path " + stsr(path) + " is not supported.")
+            return True
+        return False
+    def files(self,revision=None):
+        # https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/hf_api#huggingface_hub.HfApi.list_repo_files
+        return self.api.list_repo_files(
+            repo_id=self.repo,
+            revision=revision,
+            repo_type=self.repo_type
+        )
+
+    def __enter__(self):
+        self.open()
+        return self
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+        return self
+    def __iadd__(self, path):
+        self.upload(path)
+        return self
+    def __getitem__(self,foil):
+        return self.download(foil)
+    def __setitem__(self,key,value):
+        self.upload(value,key)
+    def __str__(self):
+        return self.files()
+    def __contains__(self, item):
+        return item in self.files()
+    def __call__(self,item):
+        return self.download(item) if item in self else None 
+
+        
+    
 
 
 class telegramBot(object):
