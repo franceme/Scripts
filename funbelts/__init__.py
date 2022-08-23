@@ -605,6 +605,7 @@ class HuggingFace(object):
         self.repo_type = repo_type
         self.auth=use_auth
         self.downloaded_files = []
+        self.opened=False
 
     def open(self):
         if isinstance(self.auth,str):
@@ -624,7 +625,7 @@ class HuggingFace(object):
             with open(f"{hugging_face}/token","a") as writer:
                 writer.write(self.auth)
             self.auth = True
-
+        self.opened = True
         return
     def close(self):
         for foil in self.downloaded_files:
@@ -639,6 +640,8 @@ class HuggingFace(object):
                     pass
         return
     def download(self, file_path=None,revision=None):
+        if not self.opened:
+            self.open()
         #https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/file_download#huggingface_hub.hf_hub_download
         if file_path and isinstance(file_path,str):
             from huggingface_hub import hf_hub_download
@@ -651,6 +654,8 @@ class HuggingFace(object):
             )
         return None
     def upload(self, path=None,path_in_repo=None):
+        if not self.opened:
+            self.open()
         if path:
             if isinstance(path,str) and os.path.isfile(path):
                 #https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/hf_api#huggingface_hub.HfApi.upload_file
@@ -673,6 +678,8 @@ class HuggingFace(object):
             return True
         return False
     def files(self,revision=None):
+        if not self.opened:
+            self.open()
         # https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/hf_api#huggingface_hub.HfApi.list_repo_files
         return self.api.list_repo_files(
             repo_id=self.repo,
@@ -680,11 +687,13 @@ class HuggingFace(object):
             repo_type=self.repo_type
         )
     def delete_file(self,path_in_repo=None,revision=None):
+        if not self.opened:
+            self.open()
         # https://huggingface.co/docs/huggingface_hub/v0.9.0/en/package_reference/hf_api#huggingface_hub.HfApi.delete_file
         if path_in_repo:
             self.api.delete_file(
                 path_in_repo=path_in_repo,
-                repo_id=self.repo_id,
+                repo_id=self.repo,
                 repo_type=self.repo_type,
                 revision=revision
             )
