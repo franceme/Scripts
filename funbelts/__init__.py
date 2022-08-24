@@ -30,6 +30,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 from github import Github
 import base64
 import datasets
+import hashlib
 try:
     from cryptography.fernet import Fernet
 except:
@@ -51,6 +52,16 @@ def open_port():
 	sock.close()
 
 	return port
+
+def hash(file):
+	sha512 = hashlib.sha512()
+	with open(file,'rb') as f:
+		while True:
+			data = f.read(65536)
+			if not data:
+				break
+			sha512.update(data)
+	return str(sha512.hexdigest())
 
 def checkPort(port):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
