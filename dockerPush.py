@@ -21,13 +21,25 @@ sample forcing a docker container to run as su
 docker run --rm -u 0 -it -v `pwd`:/temp username/dockername
  > -u 0
  > forcing the user id to be 0, the root id
+
+Eventually switch to
+https://github.com/docker/docker-py
+
+Things to add:
+* Join existing and running docker container
 """
+
+if False:
+	try:
+		import docker
+	except:
+		os.system(str(sys.executable) + " -m pip install docker")
+		import docker
 
 def is_docker():
 	path = '/proc/self/cgroup'
 	return (os.path.exists('/.dockerenv') or os.path.isfile(path) and
 			any('docker' in line for line in open(path)))
-
 
 docker = "docker"
 docker_username = "frantzme"
@@ -36,6 +48,29 @@ docker_username = "frantzme"
 #The main runner of this file, intended to be ran from
 '''####################################
 
+if False:
+	class engine(object):
+		def __init__(self, engineType):
+			self.engineType = engineType #cmd or python
+		
+		def __get_port(self,port):
+			sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			result = bool(sock.connect_ex(('127.0.0.1', int(port))))
+			sock.close()
+
+			if sock:
+				return port
+			else:
+				sock = socket.socket()
+				sock.bind(('', 0))
+				x, port = sock.getsockname()
+				sock.close()
+				return port
+
+		def __cmd(self,string):
+			return str(subprocess.check_output(string, shell=True, text=True)).strip()
+
+	
 
 def run(cmd):
 	return str(subprocess.check_output(cmd, shell=True, text=True)).strip()
