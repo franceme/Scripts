@@ -144,7 +144,7 @@ def clean():
 
 def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash"):
 	if dind:
-		if platform.system().lower() == "darwin":  #Mac
+		if False and platform.system().lower() == "darwin":  #Mac
 			dockerInDocker = "--privileged=true -v /private/var/run/docker.sock:/var/run/docker.sock"
 		else: #if platform.system().lower() == "linux":
 			dockerInDocker = "--privileged=true -v /var/run/docker.sock:/var/run/docker.sock"
