@@ -125,9 +125,12 @@ def getArgs():
 	parser.add_argument("-c","--cmd", help="The cmd to be run", nargs="*", default=["/bin/bash"])
 	parser.add_argument("--dind", help="Use Docker In Docker", action="store_true", default=False)
 	parser.add_argument("--detach", help="Run the docker imagr detached", action="store_true",default=False)
+	parser.add_argument("--shebang", help="", action="store_true",default=False)
 	parser.add_argument("--mount", help="mount the current directory to which virtual folder",default="/sync")
 	parser.add_argument("-n","--name", help="The name of the image",default="kinde")
-	return parser.parse_args()
+	#args,unknown = parser.parse_known_args()
+	args = parser.parse_args()
+	return args 
 
 def clean():
 	global docker
@@ -203,6 +206,8 @@ def write_docker_compose(dockerName, ports=[], flags="", detatched=False, mount=
 	return "docker compose up " + str('-d' if detatched else '')
 
 if __name__ == '__main__':
+	if '--shebang' in ''.join(sys.argv):
+		sys.argv = ' '.join(sys.argv[:-1]).split(' ')
 	args, cmds, execute = getArgs(), [], True
 	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, ' '.join(args.cmd))
 	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y)
