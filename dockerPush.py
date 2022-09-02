@@ -354,7 +354,7 @@ if __name__ == '__main__':
 		cmds += [
 			f"{docker} pull {getDockerImage(args.docker[0])}"
 		]
-	elif _cmd_string in ["clean","frun"]:
+	elif _cmd_string in ["clean"]:
 		cmds += clean()
 	elif _cmd_string == "stop":
 		cmds += [f"{docker} kill $({docker} ps -a -q)"]
