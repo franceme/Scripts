@@ -216,9 +216,9 @@ if __name__ == '__main__':
 	if _cmd_string.strip() == "":
 		print("No command specified")
 		sys.exit(1)
-	elif _cmd_string in ["clean","frun"]:
+	if _cmd_string in ["clean","frun"]:
 		cmds += clean()
-	elif _cmd_string == "update":
+	if _cmd_string == "update":
 		try:
 			import requests
 		except:
@@ -233,94 +233,94 @@ if __name__ == '__main__':
 					for line in resp.text.split('\n'):
 						print(line)
 					break
-	elif _cmd_string == "pose":
+	if _cmd_string == "pose":
 		write_docker_compose(getDockerImage(args.docker[0]), args.ports, "", args.detach, args.mount, args.dind, args.cmd, args.name)
-	elif _cmd_string == "poser":
+	if _cmd_string == "poser":
 		cmds += [
 			write_docker_compose(getDockerImage(args.docker[0]), args.ports, "", args.detach, args.mount, args.dind, args.cmd,args.name),
 			"rm docker-compose.yml"
 		]
-	elif _cmd_string in ["run","frun"]:
+	if _cmd_string in ["run","frun"]:
 		cmds += [
 			regrun(args.docker[0])
 		]
-	elif _cmd_string == "wrap":
+	if _cmd_string == "wrap":
 		cmds += [
 			base_run(args.docker[0], args.ports, "", args.detach, args.mount, args.dind, args.cmd)
 		] + clean()
-	elif _cmd_string == "pylite":
+	if _cmd_string == "pylite":
 		cmds += [
 			regrun("frantzme/pythondev:lite")
 		]
-	elif _cmd_string == "writelite":
+	if _cmd_string == "writelite":
 		cmds += [
 			regrun("frantzme/writer:lite")
 		]
-	elif _cmd_string == "jlite":
+	if _cmd_string == "jlite":
 		cmds += [
 			regrun("frantzme/javadev:lite")
 		]
-	elif _cmd_string == "netdata" and False: #Need to figure out
+	if _cmd_string == "netdata" and False: #Need to figure out
 		cmds += [
 			base_run("netdata/netdata:latest", ['19999'], f"-v netdataconfig:/etc/netdata -v netdatalib:/var/lib/netdata -v netdatacache:/var/cache/netdata -v /etc/passwd:/host/etc/passwd:ro -v /etc/group:/host/etc/group:ro -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /etc/os-release:/host/etc/os-release:ro {'--restart unless-stopped' if args.detach else ''} --cap-add SYS_PTRACE --security-opt apparmor=unconfined", args.detach, args.mount, args.dind, "")
 		]
-	elif _cmd_string == "mypy":
+	if _cmd_string == "mypy":
 		cmds += [
 			regcmd("frantzme/pythondev:latest", "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\"")
 		]
-	elif _cmd_string == "dive":
+	if _cmd_string == "dive":
 		#https://github.com/wagoodman/dive
 		cmds += [
 			f"{docker} pull {getDockerImage(args.docker[0])}",
 			f"dive {getDockerImage(args.docker[0])}"
 		]
-	elif _cmd_string == "build":
+	if _cmd_string == "build":
 		cmds = [
 			f"{docker} build -t {args.name[0]} .",
 			f"{docker} run --rm -it -v \"{dir}:/sync\" {args.name[0]} {args.cmd}"
 		]
-	elif _cmd_string == "lopy":
+	if _cmd_string == "lopy":
 		cmds += [
 			base_run("frantzme/pythondev:latest", [], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick -i {args.cmd} \"")
 		]
-	elif _cmd_string == "blockly":
+	if _cmd_string == "blockly":
 		cmds += [
 			base_run("frantzme/ml:latest", ["5000"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "blockly")
 		]
-	elif _cmd_string == "mll":
+	if _cmd_string == "mll":
 		cmds += [
 			base_run("dagshub/ml-workspace:latest", ["8080"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\"")
 		]
-	elif _cmd_string == "labpy":
+	if _cmd_string == "labpy":
 		cmds += [
 			base_run("frantzme/pythondev:latest", ["8888"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "jupyter lab --ip=0.0.0.0 --allow-root --port 8888 --notebook-dir=\"/sync/\"")
 		]
-	elif _cmd_string == "jlab":
+	if _cmd_string == "jlab":
 		cmds += [
 			base_run("oneoffcoder/java-jupyter", ["8675"], None,None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"")
 		]
-	elif _cmd_string == "lab":
+	if _cmd_string == "lab":
 		cmds += [
 			base_run("frantzme/pythondev:latest", ["8675"], None, None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"")
 		]
-	elif _cmd_string == "sos":
+	if _cmd_string == "sos":
 		cmds += [
 			base_run("vatlab/sos-notebook", ["8678"], None, None, "/home/jovyan/work", args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8678")
 		]
-	elif _cmd_string == "polynote":
+	if _cmd_string == "polynote":
 		#https://github.com/polynote/polynote/blob/master/docker/README.md
 		cmds += [
 			base_run("polynote/polynote:latest", ["8192"], None, None, "data", args.dind, f"-p 127.0.0.1:8192:8192 -p 127.0.0.1:4040-4050:4040-4050")
 		]
-	elif _cmd_string == "polynote2":
+	if _cmd_string == "polynote2":
 		cmds += [
 			base_run("xtreamsrl/polynote-docker", ["8192"],None, args.detach,"/data", args.dind, args.cmd)
 		]
-	elif _cmd_string == "cmd":
+	if _cmd_string == "cmd":
 		cmds += [
 			base_run(args.docker[0], args.ports, None, None, args.mount, args.dind, ' '.join(args.cmd))
 		]
-	elif _cmd_string == "qodana-jvm":
+	if _cmd_string == "qodana-jvm":
 		output_results = "qodana_jvm_results"
 		try:
 			os.system(f"mkdir {output_results}")
@@ -330,39 +330,39 @@ if __name__ == '__main__':
 		cmds += [
 			base_run("jetbrains/qodana-jvm", ["8080"], f"-v \"{output_results}:/data/results/\"  --show-report", "/data/project/", args.mount, args.dind, "/bin/bash")
 		]
-	elif _cmd_string == "qodana-py":
+	if _cmd_string == "qodana-py":
 		cmds += [
 			base_run("jetbrains/qodana-python:2022.1-eap", ["8080"], "--show-report", "/data/project/", args.mount, args.dind, "/bin/bash")
 		]
-	elif _cmd_string == "splunk":
+	if _cmd_string == "splunk":
 		cmds += [
 			base_run("splunk/splunk:latest", ["8000"], "-e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password'",None, args.mount, args.dind, "start")
 		]
-	elif _cmd_string == "beaker":
+	if _cmd_string == "beaker":
 		cmds += [
 			base_run("beakerx/beakerx", ["8888"], None, args.detach, args.mount, args.dind, "/bin/bash")
 		]
-	elif _cmd_string == "superset":
+	if _cmd_string == "superset":
 		cmds += [
 			base_run("apache/superset:latest", ["8088"], None, args.detach, args.mount, args.dind, "/bin/bash")
 		]
-	elif _cmd_string == "mysql":
+	if _cmd_string == "mysql":
 		cmds += [
 			base_run("mysql:latest", ["3306"], "-e MYSQL_ROOT_PASSWORD=root", args.detach, args.mount, args.dind, "/bin/bash")
 		]
-	elif _cmd_string in ["load","pull"]:
+	if _cmd_string in ["load","pull"]:
 		cmds += [
 			f"{docker} pull {getDockerImage(args.docker[0])}"
 		]
-	elif _cmd_string in ["clean"]:
+	if _cmd_string in ["clean"]:
 		cmds += clean()
-	elif _cmd_string == "stop":
+	if _cmd_string == "stop":
 		cmds += [f"{docker} kill $({docker} ps -a -q)"]
-	elif _cmd_string == "list":
+	if _cmd_string == "list":
 		cmds = [f"{docker} images"]
-	elif _cmd_string == "live":
+	if _cmd_string == "live":
 		cmds = [f"{docker} ps|awk '{{print $1, $3}}'"]
-	elif _cmd_string == "update":
+	if _cmd_string == "update":
 		containerID = run(f"{docker} ps |awk '{{print $1}}'|tail -1")
 		imageID = run(f"{docker} ps |awk '{{print $2}}'|tail -1")
 
@@ -370,7 +370,7 @@ if __name__ == '__main__':
 			f"{docker} commit {containerID} {imageID}",
 			f"{docker} push {imageID}"
 		]		
-	elif _cmd_string == "kill":
+	if _cmd_string == "kill":
 		if len(sys.argv) != 3:
 			print("Please enter a docker name")
 			sys.exit(0)
@@ -380,7 +380,7 @@ if __name__ == '__main__':
 			f"{docker} kill $({docker} ps |grep {getDockerImage()}|awk '{{print $1}}')",
 			f"{docker} rmi $(docker images |grep {dockerName}|awk '{{print $3}}')"
 		]
-	elif _cmd_string in ["loads","pulls"]:
+	if _cmd_string in ["loads","pulls"]:
 		for load in args.docker:
 			cmds += [f"{docker} pull {getDockerImage(load)}"]
 
