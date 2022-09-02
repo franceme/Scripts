@@ -20,3 +20,30 @@ def load(c):
 @task
 def clean(c):
 	return True
+
+@task
+def gitr(c):
+	for x in [
+		'git config --global user.email "EMAIL"',
+		'git config --global user.name "UserName (pythondev@lite)"'
+	]:
+		print(x);os.system(x)
+
+@task
+def cleanenv(c):
+	for x in [
+		'CachedExtensions/',
+		'CachedExtensionVSIXs/',
+		'User/',
+		'Machine/',
+		'extensions/',
+		'logs/',
+		'coder.json',
+		'machineid',
+	]:
+		x = "yes|rm -r " + str(x)
+		print(x);os.system(x)
+
+@task
+def execute(c):
+	print("Executing")
