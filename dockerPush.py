@@ -206,7 +206,7 @@ def write_docker_compose(dockerName, ports=[], flags="", detatched=False, mount=
 	return "docker compose up " + str('-d' if detatched else '')
 
 if __name__ == '__main__':
-	if not os.path.exists('/usr/bin/docker'):
+	if not os.path.exists('/usr/bin/docker') and not os.path.exists("/usr/local/bin/docker"):
 		os.system("yes|apt-get install docker.io")
 
 	if '--shebang' in ''.join(sys.argv):
