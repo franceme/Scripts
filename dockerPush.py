@@ -107,7 +107,7 @@ def getDockerImage(input):
 		if "pydev" in input:
 			output = f"{docker_username}/pythondev:latest"
 		elif "pytest" in input:
-			output = f"{docker_username}/pytesting:latest"
+			output = f"{docker_username}/pythontesting:latest"
 		else:
 			output = f"{docker_username}/{input}:latest"
 		if use_lite:
