@@ -26,7 +26,7 @@ import pandas as pd
 import psutil
 import time
 from telegram import Update, ForceReply, Bot
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext
 from github import Github
 import base64
 import datasets
@@ -640,6 +640,24 @@ class ephfile(object):
             except Exception as e:
                 pass
         return self
+
+
+def cmt_json(input_foil):
+    contents = None
+    import shutil
+    try:
+        with ephfile(input_foil.replace('.json','_back.json')) as eph:
+            shutil.copyfile(input_foil,eph())
+            from fileinput import FileInput as finput
+            with finput(eph(),inplace=True,backup=None) as foil:
+                for line in foil:
+                    if not line.strip().startswith("//"):
+                        print(line,end='')
+            with open(eph(),'r') as reader:
+                contents = json.load(reader)
+    except Exception as e:
+        print(e)
+    return contents
 
 class HuggingFace(object):
     def __init__(self,repo,repo_type="dataset",use_auth=True):
