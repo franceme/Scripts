@@ -205,6 +205,24 @@ def write_docker_compose(dockerName, ports=[], flags="", detatched=False, mount=
 	
 	return "docker compose up " + str('-d' if detatched else '')
 
+def update(url = "https://rebrand.ly/pydock"):
+	try:
+		import requests
+	except:
+		os.system(str(sys.executable) + " -m pip install requests")
+		import requests
+
+	try:
+		new_contents = requests.get(url).text
+		with open(__file__,'r+') as foil:
+			data = foil.read()
+			foil.seek(0)
+			foil.write(new_contents)
+			foil.truncate()
+	except:
+		pass
+
+
 if __name__ == '__main__':
 	if not os.path.exists('/usr/bin/docker') and not os.path.exists("/usr/local/bin/docker"):
 		os.system("yes|apt-get install docker.io")
@@ -218,6 +236,9 @@ if __name__ == '__main__':
 	_cmd_string = str(args.command[0]).strip().lower()
 	if _cmd_string.strip() == "":
 		print("No command specified")
+		sys.exit(1)
+	if _cmd_string == "update":
+		update()
 		sys.exit(1)
 	if _cmd_string in ["clean","frun"]:
 		cmds += clean()
