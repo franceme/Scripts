@@ -637,7 +637,12 @@ class ephfile(object):
             else:
                 with open(self.foil,"a+") as writer:
                     writer.write(contents)
-    
+
+    @property
+    def contents(self):
+        with open(self.foil,'r') as reader:
+            return '\n'.join(reader.readlines())
+
     def __iadd__(self,contents):
         if self.named:
             self.named.write(str.encode(contents + "\n"))
