@@ -126,6 +126,7 @@ def getArgs():
 	parser.add_argument("--dind", help="Use Docker In Docker", action="store_true", default=False)
 	parser.add_argument("--detach", help="Run the docker imagr detached", action="store_true",default=False)
 	parser.add_argument("--shebang", help="", action="store_true",default=False)
+	parser.add_argument("--sudo", help="Add sudo onto docker", action="store_true",default=False)
 	parser.add_argument("--mount", help="mount the current directory to which virtual folder",default="/sync")
 	parser.add_argument("-n","--name", help="The name of the image",default="kinde") 
 	parser.add_argument("--shared", help="Created a shared folder between docker and internal dockers.", action="store_true",default=False) #https://stackoverflow.com/questions/53539807/why-docker-in-docker-dind-containers-mount-volumes-with-host-path#answer-53542041
@@ -239,6 +240,11 @@ if __name__ == '__main__':
 	if '--shebang' in ''.join(sys.argv):
 		sys.argv = ' '.join(sys.argv[:-1]).split(' ')
 	args, cmds, execute = getArgs(), [], True
+
+	global docker
+	if args.sudo:
+		docker = "sudo docker"
+
 	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, ' '.join(args.cmd),args.shared,args.useshared)
 	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y,args.shared,args.useshared)
 
