@@ -158,7 +158,7 @@ def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", din
 	if isinstance(cmd, list):
 		cmd = ' '.join(cmd)
 
-	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{dir}:{mount}\" {"-e EXCHANGE_PATH=" + str(mount) if shared else ''} {getPort(ports)} {flags or ''} {getDockerImage(dockerName)} {cmd or ''}"
+	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{dir}:{mount}\" {str("-e EXCHANGE_PATH=" + str(mount)) if shared else ''} {getPort(ports)} {flags or ''} {getDockerImage(dockerName)} {cmd or ''}"
 
 def write_docker_compose(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",name="kinde"):
 	try:
