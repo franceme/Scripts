@@ -17,27 +17,18 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
     
-    - shell: pwsh
-      #https://www.meziantou.net/executing-github-actions-jobs-or-steps-only-when-specific-files-change.htm
-      # Give an id to the step, so we can reference it later
-      id: check_file_changed
-      run: |
-        # Diff HEAD with the previous commit
-        $diff = git diff --name-only HEAD^ HEAD
-
-        # Check if a file under docs/ or with the .md extension has changed (added, modified, deleted)
-        $SourceDiff = $diff | Where-Object { $_ -match '__init__.py$' }
-        $HasDiff = $SourceDiff.Length -gt 0
-
-        # Set the output named "docs_changed"
-        Write-Host "::set-output name=docs_changed::$HasDiff"
+    - name: checkfiles
+      uses: AceFire6/file_changes@v0.1.0
+      with:
+        change-map: |
+          python: {"globs":"*__init__.py","seperateDeleted":true}
 
     - name: Build the executable
-      if: steps.check_file_changed.outputs.docs_changed == 'True'
+      if: steps.checkfiles.outputs.any-matches == 'true'
       run: python3 -m pip install twine && python3 setup.py sdist && ./setup.py patch
 
     - name: Publish a Python distribution to PyPI
-      if: steps.check_file_changed.outputs.docs_changed == 'True'
+      if: steps.checkfiles.outputs.any-matches == 'true'
       #if: github.event_name == 'push'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -45,7 +36,7 @@ jobs:
         password: ${{ secrets.PYPI_API_TOKEN }}
 
     - name: Repository Dispatch
-      if: steps.check_file_changed.outputs.docs_changed == 'True'
+      if: steps.checkfiles.outputs.any-matches == 'true'
       uses: peter-evans/repository-dispatch@v1
       with:
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
