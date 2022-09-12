@@ -24,11 +24,9 @@ jobs:
           python: {"globs":"*__init__.py","seperateDeleted":true}
 
     - name: Build the executable
-      if: steps.checkfiles.outputs.any-matches == 'true'
       run: python3 -m pip install twine && python3 setup.py sdist && ./setup.py patch
 
     - name: Publish a Python distribution to PyPI
-      if: steps.checkfiles.outputs.any-matches == 'true'
       #if: github.event_name == 'push'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
@@ -36,7 +34,6 @@ jobs:
         password: ${{ secrets.PYPI_API_TOKEN }}
 
     - name: Repository Dispatch
-      if: steps.checkfiles.outputs.any-matches == 'true'
       uses: peter-evans/repository-dispatch@v1
       with:
         token: ${{ secrets.REPO_ACCESS_TOKEN }}
