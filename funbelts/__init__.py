@@ -636,7 +636,7 @@ class ephfile(object):
             os.remove(self.foil)
         except:
             try:
-                os.system("yes|rm " + str(self.foil))
+                os.system("yes|rm -r " + str(self.foil))
             except Exception as e:
                 pass
         return self
