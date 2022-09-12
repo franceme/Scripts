@@ -156,7 +156,7 @@ def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", din
 		dockerInDocker = ""
 	
 	if shared:
-		exchanged = "-e EXCHANGE_PATH=" + str(mount)
+		exchanged = "-e EXCHANGE_PATH=" + os.path.abspath(os.curdir)
 	else:
 		exchanged = ""
 
