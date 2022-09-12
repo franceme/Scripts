@@ -150,7 +150,7 @@ def clean():
 
 def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",args=None):
 	try:
-		shared,useshared,sudo = args.shared,args.useshared,args.sudo
+		shared,useshared,sudo = args.shared,args.useshared,"sudo" if args.sudo else ""
 	except:
 		shared,useshared,sudo = False,False,""
 
