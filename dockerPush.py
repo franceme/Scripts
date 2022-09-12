@@ -129,6 +129,7 @@ def getArgs():
 	parser.add_argument("--mount", help="mount the current directory to which virtual folder",default="/sync")
 	parser.add_argument("-n","--name", help="The name of the image",default="kinde") 
 	parser.add_argument("--shared", help="Created a shared folder between docker and internal dockers.", action="store_true",default=False) #https://stackoverflow.com/questions/53539807/why-docker-in-docker-dind-containers-mount-volumes-with-host-path#answer-53542041
+	parser.add_argument("--useshared", help="Used the shared point as a mounting point", action="store_true",default=False) #https://stackoverflow.com/questions/53539807/why-docker-in-docker-dind-containers-mount-volumes-with-host-path#answer-53542041
 	#args,unknown = parser.parse_known_args()
 	args = parser.parse_args()
 	return args 
@@ -146,8 +147,8 @@ def clean():
 			f"{docker} builder prune -f -a"
 	]
 
-def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",shared=False):
-	if dind:
+def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",shared=False,useshared=False):
+	if dind or shared:
 		if False and platform.system().lower() == "darwin":  #Mac
 			dockerInDocker = "--privileged=true -v /private/var/run/docker.sock:/var/run/docker.sock"
 		else: #if platform.system().lower() == "linux":
@@ -162,6 +163,8 @@ def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", din
 
 	if isinstance(cmd, list):
 		cmd = ' '.join(cmd)
+
+	dir = "$EXCHANGE_PATH" if useshared else dir
 
 	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{dir}:{mount}\" {exchanged} {getPort(ports)} {flags or ''} {getDockerImage(dockerName)} {cmd or ''}"
 
@@ -236,8 +239,8 @@ if __name__ == '__main__':
 	if '--shebang' in ''.join(sys.argv):
 		sys.argv = ' '.join(sys.argv[:-1]).split(' ')
 	args, cmds, execute = getArgs(), [], True
-	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, ' '.join(args.cmd),args.shared)
-	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y,args.shared)
+	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, ' '.join(args.cmd),args.shared,args.useshared)
+	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y,args.shared,args.useshared)
 
 	_cmd_string = str(args.command[0]).strip().lower()
 	if _cmd_string.strip() == "":
@@ -276,7 +279,7 @@ if __name__ == '__main__':
 		]
 	if _cmd_string == "wrap":
 		cmds += [
-			base_run(args.docker[0], args.ports, "", args.detach, args.mount, args.dind, args.cmd,args.shared)
+			base_run(args.docker[0], args.ports, "", args.detach, args.mount, args.dind, args.cmd,args.shared,args.useshared)
 		] + clean()
 	if _cmd_string == "pylite":
 		cmds += [
@@ -292,7 +295,7 @@ if __name__ == '__main__':
 		]
 	if _cmd_string == "netdata" and False: #Need to figure out
 		cmds += [
-			base_run("netdata/netdata:latest", ['19999'], f"-v netdataconfig:/etc/netdata -v netdatalib:/var/lib/netdata -v netdatacache:/var/cache/netdata -v /etc/passwd:/host/etc/passwd:ro -v /etc/group:/host/etc/group:ro -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /etc/os-release:/host/etc/os-release:ro {'--restart unless-stopped' if args.detach else ''} --cap-add SYS_PTRACE --security-opt apparmor=unconfined", args.detach, args.mount, args.dind, "",args.shared)
+			base_run("netdata/netdata:latest", ['19999'], f"-v netdataconfig:/etc/netdata -v netdatalib:/var/lib/netdata -v netdatacache:/var/cache/netdata -v /etc/passwd:/host/etc/passwd:ro -v /etc/group:/host/etc/group:ro -v /proc:/host/proc:ro -v /sys:/host/sys:ro -v /etc/os-release:/host/etc/os-release:ro {'--restart unless-stopped' if args.detach else ''} --cap-add SYS_PTRACE --security-opt apparmor=unconfined", args.detach, args.mount, args.dind, "",args.shared,args.useshared)
 		]
 	if _cmd_string == "mypy":
 		cmds += [
@@ -311,44 +314,44 @@ if __name__ == '__main__':
 		]
 	if _cmd_string == "lopy":
 		cmds += [
-			base_run("frantzme/pythondev:latest", [], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick -i {args.cmd} \"",args.shared)
+			base_run("frantzme/pythondev:latest", [], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick -i {args.cmd} \"",args.shared,args.useshared)
 		]
 	if _cmd_string == "blockly":
 		cmds += [
-			base_run("frantzme/ml:latest", ["5000"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "blockly",args.shared)
+			base_run("frantzme/ml:latest", ["5000"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "blockly",args.shared,args.useshared)
 		]
 	if _cmd_string == "mll":
 		cmds += [
-			base_run("dagshub/ml-workspace:latest", ["8080"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\"",args.shared)
+			base_run("dagshub/ml-workspace:latest", ["8080"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "bash -c \"cd /sync && ipython3 --no-banner --no-confirm-exit --quick\"",args.shared,args.useshared)
 		]
 	if _cmd_string == "labpy":
 		cmds += [
-			base_run("frantzme/pythondev:latest", ["8888"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "jupyter lab --ip=0.0.0.0 --allow-root --port 8888 --notebook-dir=\"/sync/\"",args.shared)
+			base_run("frantzme/pythondev:latest", ["8888"], "--env AUTHENTICATE_VIA_JUPYTER=\"password\"", args.detach, args.mount, args.dind, "jupyter lab --ip=0.0.0.0 --allow-root --port 8888 --notebook-dir=\"/sync/\"",args.shared,args.useshared)
 		]
 	if _cmd_string == "jlab":
 		cmds += [
-			base_run("oneoffcoder/java-jupyter", ["8675"], None,None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"",args.shared)
+			base_run("oneoffcoder/java-jupyter", ["8675"], None,None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"",args.shared,args.useshared)
 		]
 	if _cmd_string == "lab":
 		cmds += [
-			base_run("frantzme/pythondev:latest", ["8675"], None, None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"",args.shared)
+			base_run("frantzme/pythondev:latest", ["8675"], None, None, args.mount, args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8675 --notebook-dir=\"/sync/\"",args.shared,args.useshared)
 		]
 	if _cmd_string == "sos":
 		cmds += [
-			base_run("vatlab/sos-notebook", ["8678"], None, None, "/home/jovyan/work", args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8678",args.shared)
+			base_run("vatlab/sos-notebook", ["8678"], None, None, "/home/jovyan/work", args.dind, f"jupyter lab --ip=0.0.0.0 --allow-root --port 8678",args.shared,args.useshared)
 		]
 	if _cmd_string == "polynote":
 		#https://github.com/polynote/polynote/blob/master/docker/README.md
 		cmds += [
-			base_run("polynote/polynote:latest", ["8192"], None, None, "data", args.dind, f"-p 127.0.0.1:8192:8192 -p 127.0.0.1:4040-4050:4040-4050",args.shared)
+			base_run("polynote/polynote:latest", ["8192"], None, None, "data", args.dind, f"-p 127.0.0.1:8192:8192 -p 127.0.0.1:4040-4050:4040-4050",args.shared,args.useshared)
 		]
 	if _cmd_string == "polynote2":
 		cmds += [
-			base_run("xtreamsrl/polynote-docker", ["8192"],None, args.detach,"/data", args.dind, args.cmd,args.shared)
+			base_run("xtreamsrl/polynote-docker", ["8192"],None, args.detach,"/data", args.dind, args.cmd,args.shared,args.useshared)
 		]
 	if _cmd_string == "cmd":
 		cmds += [
-			base_run(args.docker[0], args.ports, None, None, args.mount, args.dind, ' '.join(args.cmd),args.shared)
+			base_run(args.docker[0], args.ports, None, None, args.mount, args.dind, ' '.join(args.cmd),args.shared,args.useshared)
 		]
 	if _cmd_string == "qodana-jvm":
 		output_results = "qodana_jvm_results"
@@ -358,27 +361,27 @@ if __name__ == '__main__':
 			pass
 
 		cmds += [
-			base_run("jetbrains/qodana-jvm", ["8080"], f"-v \"{output_results}:/data/results/\"  --show-report", "/data/project/", args.mount, args.dind, "/bin/bash",args.shared)
+			base_run("jetbrains/qodana-jvm", ["8080"], f"-v \"{output_results}:/data/results/\"  --show-report", "/data/project/", args.mount, args.dind, "/bin/bash",args.shared,args.useshared)
 		]
 	if _cmd_string == "qodana-py":
 		cmds += [
-			base_run("jetbrains/qodana-python:2022.1-eap", ["8080"], "--show-report", "/data/project/", args.mount, args.dind, "/bin/bash",args.shared)
+			base_run("jetbrains/qodana-python:2022.1-eap", ["8080"], "--show-report", "/data/project/", args.mount, args.dind, "/bin/bash",args.shared,args.useshared)
 		]
 	if _cmd_string == "splunk":
 		cmds += [
-			base_run("splunk/splunk:latest", ["8000"], "-e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password'",None, args.mount, args.dind, "start",args.shared)
+			base_run("splunk/splunk:latest", ["8000"], "-e SPLUNK_START_ARGS='--accept-license' -e SPLUNK_PASSWORD='password'",None, args.mount, args.dind, "start",args.shared,args.useshared)
 		]
 	if _cmd_string == "beaker":
 		cmds += [
-			base_run("beakerx/beakerx", ["8888"], None, args.detach, args.mount, args.dind, "/bin/bash",args.shared)
+			base_run("beakerx/beakerx", ["8888"], None, args.detach, args.mount, args.dind, "/bin/bash",args.shared,args.useshared)
 		]
 	if _cmd_string == "superset":
 		cmds += [
-			base_run("apache/superset:latest", ["8088"], None, args.detach, args.mount, args.dind, "/bin/bash",args.shared)
+			base_run("apache/superset:latest", ["8088"], None, args.detach, args.mount, args.dind, "/bin/bash",args.shared,args.useshared)
 		]
 	if _cmd_string == "mysql":
 		cmds += [
-			base_run("mysql:latest", ["3306"], "-e MYSQL_ROOT_PASSWORD=root", args.detach, args.mount, args.dind, "/bin/bash",args.shared)
+			base_run("mysql:latest", ["3306"], "-e MYSQL_ROOT_PASSWORD=root", args.detach, args.mount, args.dind, "/bin/bash",args.shared,args.useshared)
 		]
 	if _cmd_string in ["load","pull"]:
 		cmds += [
