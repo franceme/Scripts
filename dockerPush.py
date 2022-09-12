@@ -135,17 +135,22 @@ def getArgs():
 	args = parser.parse_args()
 	return args 
 
-def clean():
+def clean(args):
 	global docker
+	try:
+		sudo = "sudo" if args.sudo else ""
+	except:
+		sudo = ""
+
 	return [
-			f"{docker} kill $({docker} ps -a -q)",
-			f"{docker} kill $({docker} ps -q)",
-			f"{docker} rm $({docker} ps -a -q)",
-			f"{docker} rmi $({docker} images -q)",
-			f"{docker} volume rm $({docker} volume ls -q)",
-			f"{docker} image prune -f",
-			f"{docker} container prune -f",
-			f"{docker} builder prune -f -a"
+			f"{sudo} {docker} kill $({docker} ps -a -q)",
+			f"{sudo} {docker} kill $({docker} ps -q)",
+			f"{sudo} {docker} rm $({docker} ps -a -q)",
+			f"{sudo} {docker} rmi $({docker} images -q)",
+			f"{sudo} {docker} volume rm $({docker} volume ls -q)",
+			f"{sudo} {docker} image prune -f",
+			f"{sudo} {docker} container prune -f",
+			f"{sudo} {docker} builder prune -f -a"
 	]
 
 def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",args=None):
@@ -257,7 +262,7 @@ if __name__ == '__main__':
 		update()
 		sys.exit(1)
 	if _cmd_string in ["clean","frun"]:
-		cmds += clean()
+		cmds += clean(args)
 	if _cmd_string == "update":
 		try:
 			import requests
@@ -287,7 +292,7 @@ if __name__ == '__main__':
 	if _cmd_string == "wrap":
 		cmds += [
 			base_run(args.docker[0], args.ports, "", args.detach, args.mount, args.dind, args.cmd,args)
-		] + clean()
+		] + clean(args)
 	if _cmd_string == "pylite":
 		cmds += [
 			regrun("frantzme/pythondev:lite")
@@ -395,7 +400,7 @@ if __name__ == '__main__':
 			f"{docker} pull {getDockerImage(args.docker[0])}"
 		]
 	if _cmd_string in ["clean","frun"]:
-		cmds += clean()
+		cmds += clean(args)
 	if _cmd_string == "stop":
 		cmds += [f"{docker} kill $({docker} ps -a -q)"]
 	if _cmd_string == "list":
