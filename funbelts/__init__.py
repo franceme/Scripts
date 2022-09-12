@@ -620,10 +620,30 @@ class SqliteConnect(object):
             print(e)
 
 class ephfile(object):
-    def __init__(self,foil):
-        if not os.path.exists(foil):
-            os.system("touch " + str(foil))
-        self.foil = foil
+    def __init__(self,foil=None,contents=None):
+        if foil is None:
+            import tempfile
+            self.named = tempfile.NamedTemporaryFile()
+            self.foil = self.named.name
+        else:
+            self.named = None
+            if not os.path.exists(foil):
+                os.system("touch " + str(foil))
+            self.foil = foil
+
+        if contents:
+            if self.named:
+                self.named.write(str.encode(contents + "\n"))
+            else:
+                with open(self.foil,"a+") as writer:
+                    writer.write(contents)
+    
+    def __iadd__(self,contents):
+        if self.named:
+            self.named.write(str.encode(contents + "\n"))
+        else:
+            with open(self.foil,"a+") as writer:
+                writer.write(contents)
     
     def __call__(self):
         return self.foil
@@ -632,13 +652,16 @@ class ephfile(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        try:
-            os.remove(self.foil)
-        except:
+        if self.named:
+            self.named.close()
+        else:
             try:
-                os.system("yes|rm -r " + str(self.foil))
-            except Exception as e:
-                pass
+                os.remove(self.foil)
+            except:
+                try:
+                    os.system("yes|rm -r " + str(self.foil))
+                except Exception as e:
+                    pass
         return self
 
 
