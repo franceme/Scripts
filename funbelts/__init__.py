@@ -649,6 +649,7 @@ class ephfile(object):
         else:
             with open(self.foil,"a+") as writer:
                 writer.write(contents)
+        return self
     
     def __call__(self):
         return self.foil
