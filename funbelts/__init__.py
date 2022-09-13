@@ -53,15 +53,14 @@ def open_port():
 
 	return port
 
-def hash(file):
-	sha512 = hashlib.sha512()
+def hash(file,hashfunc=hashlib.sha512()):
 	with open(file,'rb') as f:
 		while True:
 			data = f.read(65536)
 			if not data:
 				break
-			sha512.update(data)
-	return str(sha512.hexdigest())
+			hashfunc.update(data)
+	return str(hashfunc.hexdigest())
 
 def checkPort(port):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
