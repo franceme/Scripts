@@ -635,23 +635,27 @@ class SqliteConnect(object):
             print(e)
 
 class ephfile(object):
-    def __init__(self,foil=None,contents=None):
+    def __init__(self,foil=None,contents=None,create=True):
         if foil is None:
             import tempfile
             self.named = tempfile.NamedTemporaryFile()
             self.foil = self.named.name
         else:
             self.named = None
-            if not os.path.exists(foil):
+            if not os.path.exists(foil) and create:
                 os.system("touch " + str(foil))
             self.foil = foil
 
         if contents:
-            if self.named:
-                self.named.write(str.encode(contents + "\n"))
-            else:
-                with open(self.foil,"a+") as writer:
-                    writer.write(contents)
+            if not isinstance(contents,list):
+                contents = [contents]
+            for cont in contents:
+                contz = str(cont)
+                if self.named:
+                    self.named.write(str.encode(contz + "\n"))
+                else:
+                    with open(self.foil,"a+") as writer:
+                        writer.write(contz)
 
     @property
     def contents(self):
@@ -659,11 +663,16 @@ class ephfile(object):
             return '\n'.join(reader.readlines())
 
     def __iadd__(self,contents):
+        if not isinstance(contents,list):
+            contents = [contents]
+
+        contz = '\n'.join([str(x) for x in contents])
         if self.named:
-            self.named.write(str.encode(contents + "\n"))
+            self.named.write(str.encode(contz + "\n"))
         else:
             with open(self.foil,"a+") as writer:
-                writer.write(contents)
+                writer.write(contz)
+
         return self
     
     def __call__(self):
@@ -672,19 +681,24 @@ class ephfile(object):
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.named:
-            self.named.close()
-        else:
-            try:
-                os.remove(self.foil)
-            except:
+    def close(self):
+        try:
+            if self.named:
+                self.named.close()
+            else:
                 try:
-                    os.system("yes|rm -r " + str(self.foil))
-                except Exception as e:
-                    pass
+                    os.remove(self.foil)
+                except:
+                    try:
+                        os.system("yes|rm -r " + str(self.foil))
+                    except Exception as e:
+                        pass
+        except Exception as e:
+            print(e)
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
         return self
-
 
 def cmt_json(input_foil):
     contents = None
