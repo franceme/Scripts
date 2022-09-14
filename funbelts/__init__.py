@@ -278,17 +278,25 @@ def frame_dycts(frame):
 def pd_to_arr(frame):
     return frame_dycts(frame)
 
-def pd_to_jsonql(frame):
+def pd_to_jsonl(frame):
     output = []
     for row in pd_to_arr(frame):
         output += [json.dumps(row)]
     return output
 
-def pd_to_jsonql_file(frame, foil):
+def pd_to_jsonl_file(frame, foil):
     with open(foil,'w+') as writer:
         for line in pd_to_jsonql(frame):
             writer.write(str(line) + "\n")
     return True
+
+def jsons_to_jsonl(jsons):
+    if not isinstance(jsons,list):
+        return []
+    output = []
+    for js in jsons:
+        output += [json.dumps(js)]
+    return output
 
 def dyct_frame(raw_dyct,deepcopy:bool=True):
     dyct = dc(raw_dyct) if deepcopy else raw_dyct
@@ -306,11 +314,16 @@ def arr_to_pd(array_of_dictionaries, ignore_index:bool=True):
         print(f"Error:> {e}")
         return None
 
-def jsonql_to_pd(foil):
-    content = []
+def jsonl_file_to_pd(foil):
+    content = None
     with open(foil,'r') as reader:
-        for line in reader.readlines():
-            content += [json.loads(line)]
+        output = jsonl_to_pd(reader.readlines())
+    return output
+
+def jsonl_to_pd(json_lines):
+    content = []
+    for line in json_lines:
+        content += [json.loads(line)]
     return arr_to_pd(content)
 
 def logg(foil,string):
