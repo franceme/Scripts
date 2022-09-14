@@ -62,6 +62,9 @@ def hash(file,hashfunc=hashlib.sha512()):
 			hashfunc.update(data)
 	return str(hashfunc.hexdigest())
 
+def hash_compare(file,hash,hashfunc=hashlib.sha512()):
+    return str(hash) == hash(file=file,hashfunc=hashfunc)
+
 def checkPort(port):
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	result = bool(sock.connect_ex(('127.0.0.1', int(port))))
