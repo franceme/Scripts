@@ -298,6 +298,16 @@ def jsons_to_jsonl(jsons):
         output += [json.dumps(js)]
     return output
 
+def jsonfiles_to_jsonl(jsons):
+    if not isinstance(jsons,list):
+        return []
+    output = []
+    for jsonfile in jsons:
+        with open(jsonfile,'r') as reader:
+            contents = json.load(reader)
+        output += json.dumps(contents)
+    return output
+
 def dyct_frame(raw_dyct,deepcopy:bool=True):
     dyct = dc(raw_dyct) if deepcopy else raw_dyct
     for key in list(raw_dyct.keys()):
