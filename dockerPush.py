@@ -140,10 +140,6 @@ def getArgs():
 
 def clean(args):
 	global docker
-	try:
-		docker = "sudo docker"
-	except:
-		docker = "docker"
 
 	return [
 			f"{docker} kill $({docker} ps -a -q)",
@@ -158,11 +154,6 @@ def clean(args):
 
 def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",args=None):
 	global docker
-	try:
-		docker = "sudo docker"
-	except:
-		docker = "docker"
-
 	try:
 		shared,useshared = args.shared,args.useshared
 	except:
@@ -189,6 +180,8 @@ def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", din
 	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{use_dir}:{mount}\" {exchanged} {getPort(ports)} {flags or ''} {getDockerImage(dockerName)} {cmd or ''}"
 
 def write_docker_compose(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",name="kinde"):
+	global docker
+
 	try:
 		from yaml import load, dump,safe_load
 	except:
@@ -232,7 +225,7 @@ def write_docker_compose(dockerName, ports=[], flags="", detatched=False, mount=
 	with open("docker-compose.yml", "w+") as writer:
 		dump(contents, writer, default_flow_style=False)
 	
-	return "docker compose up " + str('-d' if detatched else '')
+	return f"{docker} compose up " + str('-d' if detatched else '')
 
 def update(url = "https://rebrand.ly/pydock"):
 	try:
@@ -251,6 +244,12 @@ def update(url = "https://rebrand.ly/pydock"):
 	except:
 		pass
 
+def set_docker(sudo=False):
+	global docker
+	if sudo:
+		docker = "sudo docker"
+	except:
+		docker = "docker"
 
 if __name__ == '__main__':
 	if not os.path.exists('/usr/bin/docker') and not os.path.exists("/usr/local/bin/docker"):
@@ -263,11 +262,7 @@ if __name__ == '__main__':
 	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, ' '.join(args.cmd),args)
 	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y,args)
 
-	global docker
-	try:
-		docker = "sudo docker"
-	except:
-		docker = "docker"
+	set_docker(args.sudo)
 
 	if args.Login or args.Logg:
 		cmds += [
