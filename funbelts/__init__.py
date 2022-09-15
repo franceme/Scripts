@@ -31,6 +31,8 @@ from github import Github
 import base64
 import datasets
 import hashlib
+from ticktick.oauth2 import OAuth2        # OAuth2 Manager
+from ticktick.api import TickTickClient   # Main Interface
 try:
     from cryptography.fernet import Fernet
 except:
@@ -643,6 +645,21 @@ class SqliteConnect(object):
                         writer.addr(key,value)
         except Exception as e:
             print(e)
+
+class ticktick(object):
+    def __init__(self,clientid,clientsecret,user,pwd,uri='http://127.0.0.1:8085'):
+        self.auth = OAuth2(client_id=clientid,client_secret=clientsecret,redirect_uri=uri)
+        self.client = TickTickClient(user, pwd, self.auth)
+
+    def __iadd__(self,taskname):
+        self.client.task.create(self.client.task.builder(taskname))
+        self.client.sync()
+    
+    def search(self,**kwargs):
+        return self.client.get_by_fields(**kwargs)
+    
+    def task_by_id(self,id):
+        return self.client.get_by_id(obj_id=id)
 
 class ephfile(object):
     def __init__(self,foil=None,contents=None,create=True):
