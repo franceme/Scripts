@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
 	if args.Login or args.Logg:
 		cmds += [
-			"docker login"
+			f"{'sudo' if args.sudo else ''} docker login"
 		]
 
 	_cmd_string = str(args.command[0]).strip().lower()
@@ -439,7 +439,7 @@ if __name__ == '__main__':
 
 	if args.Logout or args.Logg:
 		cmds += [
-			"docker logout"
+			f"{'sudo' if args.sudo else ''} docker logout"
 		]
 
 	for x in cmds:
