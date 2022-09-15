@@ -248,7 +248,7 @@ def set_docker(sudo=False):
 	global docker
 	if sudo:
 		docker = "sudo docker"
-	except:
+	else
 		docker = "docker"
 
 if __name__ == '__main__':
