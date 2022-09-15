@@ -141,26 +141,32 @@ def getArgs():
 def clean(args):
 	global docker
 	try:
-		sudo = "sudo" if args.sudo else ""
+		docker = "sudo docker"
 	except:
-		sudo = ""
+		docker = "docker"
 
 	return [
-			f"{sudo} {docker} kill $({docker} ps -a -q)",
-			f"{sudo} {docker} kill $({docker} ps -q)",
-			f"{sudo} {docker} rm $({docker} ps -a -q)",
-			f"{sudo} {docker} rmi $({docker} images -q)",
-			f"{sudo} {docker} volume rm $({docker} volume ls -q)",
-			f"{sudo} {docker} image prune -f",
-			f"{sudo} {docker} container prune -f",
-			f"{sudo} {docker} builder prune -f -a"
+			f"{docker} kill $({docker} ps -a -q)",
+			f"{docker} kill $({docker} ps -q)",
+			f"{docker} rm $({docker} ps -a -q)",
+			f"{docker} rmi $({docker} images -q)",
+			f"{docker} volume rm $({docker} volume ls -q)",
+			f"{docker} image prune -f",
+			f"{docker} container prune -f",
+			f"{docker} builder prune -f -a"
 	]
 
 def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",args=None):
+	global docker
 	try:
-		shared,useshared,sudo = args.shared,args.useshared,"sudo" if args.sudo else ""
+		docker = "sudo docker"
 	except:
-		shared,useshared,sudo = False,False,""
+		docker = "docker"
+
+	try:
+		shared,useshared = args.shared,args.useshared
+	except:
+		shared,useshared = False,False
 
 	if dind or shared:
 		if False and platform.system().lower() == "darwin":  #Mac
@@ -180,7 +186,7 @@ def base_run(dockerName, ports=[], flags="", detatched=False, mount="/sync", din
 
 	use_dir = "$EXCHANGE_PATH" if useshared else dir
 
-	return f"{sudo} {docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{use_dir}:{mount}\" {exchanged} {getPort(ports)} {flags or ''} {getDockerImage(dockerName)} {cmd or ''}"
+	return f"{docker} run {dockerInDocker} --rm {'-d' if detatched else '-it'} -v \"{use_dir}:{mount}\" {exchanged} {getPort(ports)} {flags or ''} {getDockerImage(dockerName)} {cmd or ''}"
 
 def write_docker_compose(dockerName, ports=[], flags="", detatched=False, mount="/sync", dind=False, cmd="/bin/bash",name="kinde"):
 	try:
@@ -257,9 +263,15 @@ if __name__ == '__main__':
 	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, ' '.join(args.cmd),args)
 	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y,args)
 
+	global docker
+	try:
+		docker = "sudo docker"
+	except:
+		docker = "docker"
+
 	if args.Login or args.Logg:
 		cmds += [
-			f"{'sudo' if args.sudo else ''} docker login"
+			f"{docker} login"
 		]
 
 	_cmd_string = str(args.command[0]).strip().lower()
@@ -439,7 +451,7 @@ if __name__ == '__main__':
 
 	if args.Logout or args.Logg:
 		cmds += [
-			f"{'sudo' if args.sudo else ''} docker logout"
+			f"{docker} logout"
 		]
 
 	for x in cmds:
