@@ -131,6 +131,9 @@ def getArgs():
 	parser.add_argument("-n","--name", help="The name of the image",default="kinde") 
 	parser.add_argument("--shared", help="Created a shared folder between docker and internal dockers.", action="store_true",default=False) #https://stackoverflow.com/questions/53539807/why-docker-in-docker-dind-containers-mount-volumes-with-host-path#answer-53542041
 	parser.add_argument("--useshared", help="Used the shared point as a mounting point", action="store_true",default=False) #https://stackoverflow.com/questions/53539807/why-docker-in-docker-dind-containers-mount-volumes-with-host-path#answer-53542041
+	parser.add_argument("--Login", help="Login", action="store_true",default=False)
+	parser.add_argument("--Logout", help="Logout", action="store_true",default=False)
+	parser.add_argument("--Logg", help="Login and Logout", action="store_true",default=False)
 	#args,unknown = parser.parse_known_args()
 	args = parser.parse_args()
 	return args 
@@ -253,6 +256,11 @@ if __name__ == '__main__':
 
 	regrun = lambda x:base_run(x, args.ports, "", args.detach, args.mount, args.dind, ' '.join(args.cmd),args)
 	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y,args)
+
+	if args.Login or args.Logg:
+		cmd += [
+			"docker login"
+		]
 
 	_cmd_string = str(args.command[0]).strip().lower()
 	if _cmd_string.strip() == "":
@@ -429,6 +437,11 @@ if __name__ == '__main__':
 		for load in args.docker:
 			cmds += [f"{docker} pull {getDockerImage(load)}"]
 
+	if args.Logout or args.Logg:
+		cmd += [
+			"docker logout"
+		]
+
 	for x in cmds:
 		try:
 			print(f"> {x}")
@@ -436,80 +449,3 @@ if __name__ == '__main__':
 				os.system(x)
 		except:
 			pass
-
-"""
-	elif command == "push":
-		if len(sys.argv) != 4:
-			print(
-				"Please enter the both the Docker Name and the running Docker ID"
-			)
-			sys.exit()
-
-		dockerName = sys.argv[2].strip()
-		dockerID = sys.argv[3].strip()
-		cmds = [
-			f"{docker} commit {dockerInDocker} {dockerID} {getDockerImage(dockerName)}",
-			f"{docker} push {getDockerImage(dockerName)}"
-		]
-	elif command == "theia":
-		if len(sys.argv) != 3:
-			print("Please enter the Docker Name")
-			sys.exit()
-		dockerName = sys.argv[2].strip()
-		#rest = 'bash -c "source /root/.bashrc && cd /Programs/theia/examples/browser && /root/.nvm/versions/node/v12.14.1/bin/yarn run start /sync --hostname 0.0.0.0"'
-		base = "/root/.nvm/versions/node/v12.14.1/bin/yarn"
-		if "py" in dockerName.lower():
-			base = "/usr/local/bin/yarn"
-		rest = f"bash -c \"cd /Programs/theia/examples/browser && {base} run start /sync --hostname 0.0.0.0\""
-
-		dis_port = "3000"
-		if not checkPort(dis_port):
-			dis_port = open_port()
-
-		ports = getPorts(ports=[f"3000:{dis_port}"])
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
-		]
-
-	elif command == "cmd":
-		if len(sys.argv) < 4:
-			print("Please enter the both the Docker Name")
-			sys.exit()
-
-		dockerName = sys.argv[2].strip()
-		ports = f"{getPorts()}" if sys.argv[3] == "port" else ""
-
-		cmdRange = 4 if sys.argv[3] == "port" else 3
-		rest = ' '.join(sys.argv[cmdRange:]).strip()
-		if "lab" == rest.strip():
-			dis_port = "8675"
-			if not checkPort(dis_port):
-				dis_port = open_port()
-
-			rest = f"jupyter lab --ip=0.0.0.0 --allow-root --port {dis_port} --notebook-dir=\"/sync/\""
-			ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
-		if "theia" == rest.strip():
-			dis_port = "3000"
-			if not checkPort(dis_port):
-				dis_port = open_port()
-
-			rest = "theia"
-			ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
-		if "jekyll" == rest.strip():
-			dis_port = "4000"
-			if not checkPort(dis_port):
-				dis_port = open_port()
-
-			ports = getPorts(ports=[f"{dis_port}:{dis_port}"])
-
-		rest = rest.replace("./", "/sync/")
-
-		cmds = [
-			f"{docker} run {dockerInDocker} --rm -it {ports} -v \"{dir}:/sync\" {getDockerImage(dockerName)} {rest}"
-		]
-
-	elif command == "telegram":
-		cmds = [
-			f"{docker} run -ti weibeld/ubuntu-telegram-cli bin/telegram-cli"
-		]
-"""
