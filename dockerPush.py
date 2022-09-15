@@ -258,7 +258,7 @@ if __name__ == '__main__':
 	regcmd = lambda x,y:base_run(x, args.ports, "", args.detach, args.mount, args.dind, y,args)
 
 	if args.Login or args.Logg:
-		cmd += [
+		cmds += [
 			"docker login"
 		]
 
@@ -438,7 +438,7 @@ if __name__ == '__main__':
 			cmds += [f"{docker} pull {getDockerImage(load)}"]
 
 	if args.Logout or args.Logg:
-		cmd += [
+		cmds += [
 			"docker logout"
 		]
 
