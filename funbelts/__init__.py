@@ -653,6 +653,118 @@ class ticktick(object):
 
     def __iadd__(self,taskname):
         self.client.task.create(self.client.task.builder(taskname))
+    
+    def create_task(self,title: str = '', projectId: str = None, content: str = None, desc: str = None, allDay: bool = None, startDate: datetime.datetime = None, dueDate: datetime.datetime = None, timeZone: str = None, reminders: list = None, repeat: str = None, priority: int = None, sortOrder: int = None, items: list = None):
+        """
+        ```python
+        start = datetime(2027, 5, 2)
+        end = datetime(2027, 5, 7)
+        title = 'Festival'
+        task_dict = client.task.builder(title, startDate=start, dueDate=end)
+        ```
+
+        create(task) method of ticktick.managers.tasks.TaskManager instance
+            Create a task. Use [`builder`][managers.tasks.TaskManager.builder] for easy task dictionary
+            creation.
+            
+            !!! warning
+                Creating tasks with tags is not functional but will be implemented in a future update.
+            
+            Arguments:
+                task (dict): Task dictionary to be created.
+            
+            Returns:
+                dict: Dictionary of created task object. Note that the task object is a "simplified" version of the full
+                task object. Use [`get_by_id`][api.TickTickClient.get_by_id] for the full task object.
+            
+            !!! example "Creating Tasks"
+                === "Just A Name"
+                    ```python
+                    title = "Molly's Birthday"
+                    task = client.task.builder(title)   # Local dictionary
+                    molly = client.task.create(task)    # Create task remotely
+                    ```
+            
+                    ??? success "Result"
+            
+                        ```python
+                        {'id': '60ca9dbc8f08516d9dd56324',
+                        'projectId': 'inbox115781412',
+                        'title': "Molly's Birthday",
+                        'timeZone': '',
+                        'reminders': [],
+                        'priority': 0,
+                        'status': 0,
+                        'sortOrder': -1336456383561728,
+                        'items': []}
+                        ```
+                        ![image](https://user-images.githubusercontent.com/56806733/122314079-5898ef00-cecc-11eb-8614-72b070b306c6.png)
+            
+                === "Dates and Descriptions"
+                    ```python
+                    title = "Molly's Birthday Party"
+            
+                    start_time = datetime(2027, 7, 5, 14, 30)  # 7/5/2027 @ 2:30PM
+                    end_time = datetime(2027, 7, 5, 19, 30)    # 7/5/2027 @ 7:30PM
+            
+                    content = "Bring Cake"
+            
+                    task = client.task.builder(title,
+                                            startDate=start_time,
+                                            dueDate=end_time,
+                                            content=content)
+            
+                    mollys_party = client.task.create(task)
+                    ```
+            
+                    ??? success "Result"
+                        ```python
+                        {'id': '60ca9fe58f08fe31011862f2',
+                        'projectId': 'inbox115781412',
+                        'title': "Molly's Birthday Party",
+                        'content': 'Bring Cake',
+                        'timeZone': '',
+                        'startDate': '2027-07-05T21:30:00.000+0000',
+                        'dueDate': '2027-07-06T02:30:00.000+0000',
+                        'priority': 0,
+                        'status': 0,
+                        'sortOrder': -1337555895189504,
+                        'items': [],
+                        'allDay': False}
+                        ```
+                        ![image](https://user-images.githubusercontent.com/56806733/122314760-a4986380-cecd-11eb-88af-9562d352470f.png)
+            
+                === "Different Project"
+                    ```python
+                    # Get the project object
+                    events = client.get_by_fields(name="Events", search='projects')
+            
+                    events_id = events['id']    # Need the project object id
+            
+                    title = "Molly's Birthday"
+            
+                    task = client.task.builder(title, projectId=events_id)
+            
+                    mollys_birthday = client.task.create(task)
+                    ```
+            
+                    ??? success "Result"
+                        ```python
+                        {'id': '60caa2278f08fe3101187002',
+                        'projectId': '60caa20d8f08fe3101186f74',
+                        'title': "Molly's Birthday",
+                        'timeZone': '',
+                        'reminders': [],
+                        'priority': 0,
+                        'status': 0,
+                        'sortOrder': -1099511627776,
+                        'items': []}
+                        ```
+                        ![image](https://user-images.githubusercontent.com/56806733/122315454-eece1480-cece-11eb-8394-94a2aec1ba70.png)
+        """
+        self.client.task.create(self.client.task.builder(title=title,projectId=projectId,content=content,desc=desc,allDay=allDay,startDate=startDate,dueDate=dueDate,timeZone=timeZone,reminders=reminders,repeat=repeat,priority=priority,sortOrder=sortOrder,items=items))
+        
+    def sync(self):
         self.client.sync()
     
     def search(self,**kwargs):
