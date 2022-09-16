@@ -11,7 +11,6 @@ from copy import deepcopy as dc
 import functools
 from zlib import compress
 import httplib2
-import datetime
 import six
 from waybackpy import WaybackMachineSaveAPI as checkpoint
 from threading import Thread, Lock
@@ -655,7 +654,7 @@ class ticktick(object):
     def __iadd__(self,taskname):
         self.client.task.create(self.client.task.builder(taskname))
     
-    def create_task(self,title: str = '', projectId: str = None, content: str = None, desc: str = None, allDay: bool = None, startDate: datetime.datetime = None, dueDate: datetime.datetime = None, timeZone: str = None, reminders: list = None, repeat: str = None, priority: int = None, sortOrder: int = None, items: list = None):
+    def create_task(self,title: str = '', projectId: str = None, content: str = None, desc: str = None, allDay: bool = None, startDate = None, dueDate= None, timeZone: str = None, reminders: list = None, repeat: str = None, priority: int = None, sortOrder: int = None, items: list = None):
         """
         ```python
         start = datetime(2027, 5, 2)
