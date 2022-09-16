@@ -878,19 +878,20 @@ class HuggingFace(object):
         if isinstance(self.auth,str):
             from pathlib import Path
             hugging_face = f"{str(Path.home())}/.huggingface/"
-            
-            for cmd in [
-                f"mkdir -p {hugging_face}",
-                f"rm {hugging_face}/token",
-                f"touch {hugging_face}/token"
-            ]:
-                try:
-                    print(cmd);os.system(cmd)
-                except:
-                    pass
+            import os
+            if not os.path.exists(os.path.join(hugging_face,"token")):
+                for cmd in [
+                    f"mkdir -p {hugging_face}",
+                    f"rm {hugging_face}/token",
+                    f"touch {hugging_face}/token"
+                ]:
+                    try:
+                        print(cmd);os.system(cmd)
+                    except:
+                        pass
 
-            with open(f"{hugging_face}/token","a") as writer:
-                writer.write(self.auth)
+                with open(f"{hugging_face}/token","a") as writer:
+                    writer.write(self.auth)
             self.auth = True
         self.opened = True
         return
@@ -953,6 +954,24 @@ class HuggingFace(object):
             revision=revision,
             repo_type=self.repo_type
         )
+    def import_file(self,file, modname=None):
+        if file not in self.files():
+            return False
+        if modname is None:
+            modname = file.replace('.py','')
+
+        import os,sys,importlib
+        
+        base_file = self[file]
+        base_path = os.path.abspath(os.path.dirname(base_file))
+        
+        sys.path.append(base_path)
+        
+        imp = f"import {file.replace('.py','')} as {modname}"
+        importlib.import_module(file.replace('.py',''))
+        print(imp)
+        return True
+        
     def delete_file(self,path_in_repo=None,revision=None):
         if not self.opened:
             self.open()
