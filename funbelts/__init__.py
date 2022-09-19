@@ -954,7 +954,7 @@ class HuggingFace(object):
             revision=revision,
             repo_type=self.repo_type
         )
-    def import_file(self,file):
+    def import(self,file):
         if file not in self.files():
             print("FILE IS NOT AVAILABLE")
             return None
@@ -964,9 +964,7 @@ class HuggingFace(object):
         import os,sys,types,importlib.machinery
         #https://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3#answer-19011259
 
-        base_file = self[file]
-
-        loader = importlib.machinery.SourceFileLoader(import_name, os.path.abspath(os.path.dirname(base_file)))
+        loader = importlib.machinery.SourceFileLoader(import_name, os.path.abspath(self[file]))
         mod = types.ModuleType(loader.name)
         loader.exec_module(mod)
 
