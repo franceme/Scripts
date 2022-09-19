@@ -954,7 +954,7 @@ class HuggingFace(object):
             revision=revision,
             repo_type=self.repo_type
         )
-    def import(self,file):
+    def impor(self,file):
         if file not in self.files():
             print("FILE IS NOT AVAILABLE")
             return None
