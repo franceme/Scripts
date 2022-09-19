@@ -961,14 +961,15 @@ class HuggingFace(object):
             modname = file.replace('.py','')
 
         import os,sys,importlib
-        
+
         base_file = self[file]
         base_path = os.path.abspath(os.path.dirname(base_file))
-        
+
         sys.path.append(base_path)
-        
-        imp = f"import {file.replace('.py','')} as {modname}"
-        importlib.import_module(file.replace('.py',''))
+        import_name = str(file.split('/')[-1]).replace('.py','')
+
+        imp = f"import {import_name} as {modname}"
+        importlib.import_module(import_name)
         print(imp)
         return True
         
