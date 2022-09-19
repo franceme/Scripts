@@ -954,24 +954,23 @@ class HuggingFace(object):
             revision=revision,
             repo_type=self.repo_type
         )
-    def import_file(self,file, modname=None):
+    def import_file(self,file):
         if file not in self.files():
-            return False
-        if modname is None:
-            modname = file.replace('.py','')
-
-        import os,sys,importlib
-
-        base_file = self[file]
-        base_path = os.path.abspath(os.path.dirname(base_file))
-
-        sys.path.append(base_path)
+            print("FILE IS NOT AVAILABLE")
+            return None
+        
         import_name = str(file.split('/')[-1]).replace('.py','')
 
-        imp = f"import {import_name} as {modname}"
-        importlib.import_module(import_name)
-        print(imp)
-        return True
+        import os,sys,types,importlib.machinery
+        #https://stackoverflow.com/questions/19009932/import-arbitrary-python-source-file-python-3-3#answer-19011259
+
+        base_file = self[file]
+
+        loader = importlib.machinery.SourceFileLoader(import_name, os.path.abspath(os.path.dirname(base_file)))
+        mod = types.ModuleType(loader.name)
+        loader.exec_module(mod)
+
+        return mod
         
     def delete_file(self,path_in_repo=None,revision=None):
         if not self.opened:
