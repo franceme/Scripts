@@ -774,7 +774,7 @@ class ticktick(object):
         return self.client.get_by_id(obj_id=id)
 
 class ephfile(object):
-    def __init__(self,foil=None,contents=None,create=True):
+    def __init__(self,foil=None,contents=None,create=True, contents_lambda=None):
         if foil is None:
             import tempfile
             self.named = tempfile.NamedTemporaryFile()
@@ -784,12 +784,13 @@ class ephfile(object):
             if not os.path.exists(foil) and create:
                 os.system("touch " + str(foil))
             self.foil = foil
+        self.contents_lambda = contents_lambda or lambda x:str(x)
 
         if contents:
             if not isinstance(contents,list):
                 contents = [contents]
             for cont in contents:
-                contz = str(cont)
+                contz = self.contents_lambda(contz)
                 if self.named:
                     self.named.write(str.encode(contz + "\n"))
                 else:
@@ -805,7 +806,7 @@ class ephfile(object):
         if not isinstance(contents,list):
             contents = [contents]
 
-        contz = '\n'.join([str(x) for x in contents])
+        contz = '\n'.join([self.contents_lambda(x) for x in contents])
         if self.named:
             self.named.write(str.encode(contz + "\n"))
         else:
