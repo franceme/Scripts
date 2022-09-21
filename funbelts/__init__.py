@@ -38,11 +38,78 @@ try:
 except:
     os.system(str(sys.executable) + " -m pip install cryptography")
     from cryptography.fernet import Fernet
+import base64
+import cryptography.exceptions
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from cryptography.hazmat.primitives import serialization
 
 def is_docker():
 	path = '/proc/self/cgroup'
 	return (os.path.exists('/.dockerenv') or os.path.isfile(path) and
 			any('docker' in line for line in open(path)))
+
+def sign_file(private_key, foil, foil_signature=None):
+    #https://stackoverflow.com/questions/50608010/how-to-verify-a-signed-file-in-python
+    # Load the private key. 
+    with open(private_key, 'rb') as key_file: 
+        private_key = serialization.load_pem_private_key(
+            key_file.read(),
+            password = None,
+            backend = default_backend(),
+        )
+
+    # Load the contents of the file to be signed.
+    with open(foil, 'rb') as f:
+        payload = f.read()
+
+    # Sign the payload file.
+    signature = base64.b64encode(
+        private_key.sign(
+            payload,
+            padding.PSS(
+                mgf = padding.MGF1(hashes.SHA256()),
+                salt_length = padding.PSS.MAX_LENGTH,
+            ),
+            hashes.SHA256(),
+        )
+    )
+    if foil_signature is None:
+        foil_signature = foil + ".sig"
+    with open(foil_signature, 'wb') as f:
+        f.write(signature)
+
+    return foil_signature
+
+def verify_file(public_key, foil, foil_signature):
+    #https://stackoverflow.com/questions/50608010/how-to-verify-a-signed-file-in-python
+    # Load the public key.
+    with open(public_key, 'rb') as f:
+        public_key = load_pem_public_key(f.read(), default_backend())
+
+    # Load the payload contents and the signature.
+    with open(foil, 'rb') as f:
+        payload_contents = f.read()
+    with open(foil_signature, 'rb') as f:
+        signature = base64.b64decode(f.read())
+
+    # Perform the verification.
+    try:
+        public_key.verify(
+            signature,
+            payload_contents,
+            padding.PSS(
+                mgf = padding.MGF1(hashes.SHA256()),
+                salt_length = padding.PSS.MAX_LENGTH,
+            ),
+            hashes.SHA256(),
+        )
+        return True
+    except cryptography.exceptions.InvalidSignature as e:
+        print('ERROR: Payload and/or signature files failed verification!')
+        return False
 
 def open_port():
 	"""
