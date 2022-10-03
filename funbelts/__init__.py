@@ -29,7 +29,6 @@ from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackContext
 from github import Github
 import base64
-import datasets
 import hashlib
 from ticktick.oauth2 import OAuth2        # OAuth2 Manager
 from ticktick.api import TickTickClient   # Main Interface
