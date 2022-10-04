@@ -665,7 +665,7 @@ class SqliteConnect(object):
         self.dataframes = {}
 
     def __enter__(self):
-        existed = os.path.exists(file_name)
+        existed = os.path.exists(self.file_name)
         self.engine = create_engine(self.connection_string, echo=self.echo)
         self.connection = self.engine.connect()
 
