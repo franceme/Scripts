@@ -377,6 +377,14 @@ def jsonfiles_to_jsonl(jsons):
         output += json.dumps(contents)
     return output
 
+def load_json(file):
+    with open(file,'r') as reader:
+        return json.load(reader)
+
+def write_json(file, contents):
+    with open(file,'w+') as writer:
+        json.dump(contents, writer)
+
 def dyct_frame(raw_dyct,deepcopy:bool=True):
     dyct = dc(raw_dyct) if deepcopy else raw_dyct
     for key in list(raw_dyct.keys()):
