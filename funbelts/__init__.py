@@ -652,6 +652,29 @@ def get_line_from_context(line_num:int, context:str,_default=""):
 def get_lines_from_context(match:str, line_num:int, context:str,_default=""):
     return match in get_line_from_context(line_num, context,_default) or match
 
+class logr(object):
+    def __init__(self,file_name=None, headerstring=None):
+        file_name = file_name.strip()
+        if os.path.exists(file_name):
+            os.remove(file_name)
+            import pathlib
+            pathlib.Path(file_name).touch()
+        
+        if headerstring is not None:
+            with open(file_name,"a+") as writer:
+                writer.write("{}\n".format(headerstring))
+        
+        self.file_name = file_name
+
+    def log(self, string=None):
+        if string is not None:
+            with open(self.file_name, "a+") as writer:
+                writer.write("{}\n".format(string))
+
+    def __iadd__(self, string=None):
+        self.log(string)
+
+
 class SqliteConnect(object):
     """
     Sample usage:
