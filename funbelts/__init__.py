@@ -655,7 +655,7 @@ def get_line_from_context(line_num:int, context:str,_default=""):
 def get_lines_from_context(match:str, line_num:int, context:str,_default=""):
     return match in get_line_from_context(line_num, context,_default) or match
 
-class logr(object):
+class loggme(object):
     def __init__(self,file_name=None, headerstring=None):
         file_name = file_name.strip()
         if os.path.exists(file_name):
