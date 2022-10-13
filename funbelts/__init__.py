@@ -986,8 +986,11 @@ class ephfile(object):
         else:
             self.named = None
             if not os.path.exists(foil) and create:
-                import pathlib
-                pathlib.Path(foil).touch()
+                try:
+                    import pathlib
+                    pathlib.Path(foil).touch()
+                except Exception as  e:
+                    pass
             self.foil = foil
         self.contents_lambda = contents_lambda or to_str
 
