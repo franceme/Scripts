@@ -986,7 +986,8 @@ class ephfile(object):
         else:
             self.named = None
             if not os.path.exists(foil) and create:
-                os.system("touch " + str(foil))
+                import pathlib
+                pathlib.Path(foil).touch()
             self.foil = foil
         self.contents_lambda = contents_lambda or to_str
 
