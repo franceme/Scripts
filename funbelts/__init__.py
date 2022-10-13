@@ -45,6 +45,9 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.hazmat.primitives import serialization
 
+def rep(string, string_to_remove):
+    return dc(string).replace(string_to_remove,'')
+
 def is_docker():
 	path = '/proc/self/cgroup'
 	return (os.path.exists('/.dockerenv') or os.path.isfile(path) and
