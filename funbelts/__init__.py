@@ -45,6 +45,14 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.hazmat.primitives import serialization
 
+def trim_pd_col_spaces(og_df,replace_with=""):
+    from copy import deepcopy as dc
+    df = dc(og_df)
+    cols = df.columns
+    cols = cols.map(lambda x: x.replace(' ', replace_with) if isinstance(x, str) else x)
+    df.columns = cols
+    return df
+
 def rep(string, string_to_remove):
     return dc(string).replace(string_to_remove,'')
 
