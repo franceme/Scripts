@@ -1009,7 +1009,7 @@ class ephfile(object):
             if not isinstance(contents,list):
                 contents = [contents]
             for cont in contents:
-                contz = self.contents_lambda(contz)
+                contz = self.contents_lambda(cont)
                 if self.named:
                     self.named.write(str.encode(contz + "\n"))
                 else:
