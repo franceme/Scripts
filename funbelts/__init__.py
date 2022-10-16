@@ -282,9 +282,15 @@ percent = lambda x,y: ("{0:.2f}").format(100 * (x / float(y)))
 cur_time = str(timr.now().strftime('%Y_%m_%d-%H_%M'))
 rnd = lambda _input: f"{round(_input * 100)} %"
 similar = lambda x,y:SequenceMatcher(None, a, b).ratio()*100
+
 file_by = lambda PATH,match:[os.path.join(dp, f) for dp, dn, filenames in os.walk(PATH) for f in filenames if match(f)]
-file_by_type = lambda PATH,ext:[os.path.join(dp, f) for dp, dn, filenames in os.walk(PATH) for f in filenames if os.path.splitext(f)[1] == ext]
-file_by_name = lambda PATH,name:[os.path.join(dp, f) for dp, dn, filenames in os.walk(PATH) for f in filenames if f == name]
+
+#file_by_type = lambda PATH,ext:[os.path.join(dp, f) for dp, dn, filenames in os.walk(PATH) for f in filenames if os.path.splitext(f)[1] == ext]
+file_by_type = lambda PATH,ext:file_by(PATH,lambda x:os.path.splitext(x)[1] == ext)
+
+#file_by_name = lambda PATH,name:[os.path.join(dp, f) for dp, dn, filenames in os.walk(PATH) for f in filenames if f == name]
+file_by_name = lambda PATH,name:file_by(PATH,lambda x:x == ext)
+
 of_dir = lambda PATH,name:[os.path.join(dp, f) for dp, dn, filenames in os.walk(PATH) for f in filenames if os.path.isdir(f) and f == name]
 
 def metrics(TP,FP,TN,FN, use_percent:bool=False):
