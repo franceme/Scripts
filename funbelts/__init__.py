@@ -693,178 +693,206 @@ class loggme(object):
 
 
 class SqliteConnect(object):
-    """
-    Sample usage:
-    ```
-    with SqliteConnect("dataset.sqlite") as sql:
-        container = pd.read_sql(sql.table_name, sql.connection_string)
-    ...
-    with SqliteConnect("dataset.sqlite") as sql:
-        container.to_sql(sql.table_name, sql.connection, if_exists='replace')
-    ```
-    """
-    def __init__(self,file_name:str,echo:bool=False):
-        #https://datacarpentry.org/python-ecology-lesson/09-working-with-sql/index.html
-        #https://stackoverflow.com/questions/305378/list-of-tables-db-schema-dump-etc-using-the-python-sqlite3-api
-        #https://stackoverflow.com/questions/34570260/how-to-get-table-names-using-sqlite3-through-python
-        self.file_name = file_name
-        self.table_name = "dataset"
-        self.echo = echo
-        self.dataframes = {}
-        self.exists = None
+	"""
+	Sample usage:
+	```
+	with SqliteConnect("dataset.sqlite") as sql:
+		container = pd.read_sql(sql.table_name, sql.connection_string)
+	...
+	with SqliteConnect("dataset.sqlite") as sql:
+		container.to_sql(sql.table_name, sql.connection, if_exists='replace')
+	```
+	"""
 
-    def enter(self):
-        if self.exists is None:
-            self.exists = os.path.exists(self.file_name)
-            self.connection = sqlite3.connect(self.file_name)
+	def __init__(self, file_name: str, echo: bool = False):
+		# https://datacarpentry.org/python-ecology-lesson/09-working-with-sql/index.html
+		# https://stackoverflow.com/questions/305378/list-of-tables-db-schema-dump-etc-using-the-python-sqlite3-api
+		# https://stackoverflow.com/questions/34570260/how-to-get-table-names-using-sqlite3-through-python
+		self.file_name = file_name
+		self.table_name = "dataset"
+		self.echo = echo
+		self.dataframes = {}
+		self.exists = None
 
-            if self.exists:
-                current_cursor = self.connection.cursor()
-                current_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
-                for name in current_cursor.fetchall():
-                    self.dataframes[name[0]] = pd.read_sql_query(f"SELECT * FROM {name[0]}", self.connection) 
-                current_cursor = None
+    def just_enter(self):
+		if self.exists is None:
+			self.exists = os.path.exists(self.file_name)
+			self.connection = sqlite3.connect(self.file_name)
 
-    def __enter__(self):
-        self.enter()
-        return self
+	def enter(self):
+		if self.exists is None:
+            self.just_enter()
 
-    def exit(self):
-        self.connection.close()
-        self.exists = None
-        return self
+			if self.exists:
+				current_cursor = self.connection.cursor()
+				current_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
+				for name in current_cursor.fetchall():
+					self.dataframes[name[0]] = pd.read_sql_query(f"SELECT * FROM {name[0]}", self.connection)
+				current_cursor = None
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.exit()
-        return self
+	def __enter__(self):
+		self.enter()
+		return self
 
-    @property
-    def table_names(self):
-        just_enter = False
-        if self.exists is None:
-            just_enter = True
-            self.enter()
+	def exit(self):
+		self.connection.close()
+		self.exists = None
+		return self
 
-        tables = self.dataframes.keys()
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		self.exit()
+		return self
 
+	def table_names(self):
+		just_enter = False
+		if self.exists is None:
+			just_enter = True
+            self.just_enter()
+
+        tables = []
         if just_enter:
-            self.exit()
+            current_cursor = self.connection.cursor()
+            current_cursor.execute(f"SELECT name FROM sqlite_master WHERE type='table';")
 
-        return tables
+            for name in current_cursor.fetchall():
+                tables += [name[0]]
 
-    def add_pandaframe(self, dataframe, sheet_name:str=None):
-        just_enter = False
-        if self.exists is None:
-            just_enter = True
-            self.enter()
-
-        while sheet_name in self.dataframes.keys():
-            sheet_name = sheet_name + "_"
-        self.dataframes[sheet_name] = dataframe
-        dataframe.to_sql(sheet_name, self.connection)
-
-        if just_enter:
-            self.exit()
-
-    def add_excel(self,fileName):
-        just_enter = False
-        if self.exists is None:
-            just_enter = True
-            self.enter()
-
-        dataframes = {}
-        try:
-            for table_name, frame in pd.read_excel(fileName, engine="openpyxl", sheet_name=None).items():
-                dataframes[table_name] = frame
-        except Exception as e:
-            print(e)
-            print(f"Issue parsing the dataframe file: {fileName}")
-            pass
-        [self.add_pandaframe(frame, key) for key,frame in dataframes.items()]
-
-        if just_enter:
-            self.exit()
-
-    def to_excel(self,filename):
-        just_enter = False
-        if self.exists is None:
-            just_enter = True
-            self.enter()
-
-        try:
-            with xcyl(filename) as writer:
-                if self.dataframes == {}:
-                    for table_name in self.connection.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall():
-                        writer.addr(table_name[0],pd.read_sql_query(f"SELECT * FROM {table_name[0]};",self.connection))
-                else:
-                    for key,value in self.dataframes.items():
-                        writer.addr(key,value)
-        except Exception as e:
-            print(e)
-
-        if just_enter:
-            self.exit()
-
-    def to_pandaframes(self):
-        from copy import deepcopy as dc
-        just_enter = False
-        if self.exists is None:
-            just_enter = True
-            self.enter()
-
-        output = dc(self.dataframes)
-
-        if just_enter:
-            self.exit()
-
-        return output
-    
-
-    def __getitem__(self,tablename):
-        just_enter = False
-        if self.exists is None:
-            just_enter = True
-            self.enter()
-
-        if tablename in self.dataframes:
-            output = self.dataframes[tablename]
+            current_cursor = None
         else:
-            output = None
+		    tables = self.dataframes.keys()
+
+		if just_enter:
+			self.exit()
+
+		return tables
+
+	def add_pandaframe(self, dataframe, sheet_name: str = None):
+		just_enter = False
+		if self.exists is None:
+			just_enter = True
+			self.enter()
+
+		while sheet_name in self.dataframes.keys():
+			sheet_name = sheet_name + "_"
+		self.dataframes[sheet_name] = dataframe
+		dataframe.to_sql(sheet_name, self.connection)
+
+		if just_enter:
+			self.exit()
+
+	def add_excel(self, fileName):
+		just_enter = False
+		if self.exists is None:
+			just_enter = True
+			self.enter()
+
+		dataframes = {}
+		try:
+			for table_name, frame in pd.read_excel(fileName, engine="openpyxl", sheet_name=None).items():
+				dataframes[table_name] = frame
+		except Exception as e:
+			print(e)
+			print(f"Issue parsing the dataframe file: {fileName}")
+			pass
+		[self.add_pandaframe(frame, key) for key, frame in dataframes.items()]
+
+		if just_enter:
+			self.exit()
+
+	def to_excel(self, filename):
+		just_enter = False
+		if self.exists is None:
+			just_enter = True
+			self.enter()
+
+		try:
+			with xcyl(filename) as writer:
+				if self.dataframes == {}:
+					for table_name in self.connection.execute(
+							"SELECT name FROM sqlite_master WHERE type='table';").fetchall():
+						writer.addr(table_name[0],
+						            pd.read_sql_query(f"SELECT * FROM {table_name[0]};", self.connection))
+				else:
+					for key, value in self.dataframes.items():
+						writer.addr(key, value)
+		except Exception as e:
+			print(e)
+
+		if just_enter:
+			self.exit()
+
+	def to_pandaframes(self):
+		from copy import deepcopy as dc
+		just_enter = False
+		if self.exists is None:
+			just_enter = True
+			self.enter()
+
+		output = dc(self.dataframes)
+
+		if just_enter:
+			self.exit()
+
+		return output
+
+	def __getitem__(self, tablename):
+		just_enter = False
+		if self.exists is None:
+			just_enter = True
+			self.enter()
+
+		if tablename in self.dataframes:
+			output = self.dataframes[tablename]
+		else:
+			output = None
+
+		if just_enter:
+			self.exit()
+
+		return output
+
+	def __setitem__(self, tablename, tablevalue):
+		just_enter = False
+		if self.exists is None:
+			just_enter = True
+			self.enter()
+
+		if isinstance(tablevalue, str):
+			if tablevalue.endswith(".xlsx"):
+				self.add_excel(tablevalue)
+			else:
+				if tablevalue.endswith(".csv"):
+					self.add_pandaframe(pd.read_csv(tablevalue), tablename)
+				elif tablevalue.endswith(".json"):
+					self.add_pandaframe(pd.read_json(tablevalue), tablename)
+				elif tablevalue.endswith(".pkl"):
+					self.add_pandaframe(pd.read_pkl(tablevalue), tablename)
+		elif isinstance(tablevalue, pd.DataFrame):
+			self.dataframes[tablename] = tablevalue
+
+		if just_enter:
+			self.exit()
+
+	def __iadd__(self, path):
+		self["temp"] = path
+		return self
+
+    def read(self, table_name):
+		just_enter, output = False, None
+		if self.exists is None:
+			just_enter = True
+            self.just_enter()
 
         if just_enter:
-            self.exit()
+            output = pd.read_sql_query(f"SELECT * FROM {table_name}", self.connection)
+        else:
+            output = self.dataframes[table_name]
+
+		if just_enter:
+			self.exit()
 
         return output
 
-
-    def __setitem__(self,tablename,tablevalue):
-        just_enter = False
-        if self.exists is None:
-            just_enter = True
-            self.enter()
-
-        if isinstance(tablevalue,str):
-            if tablevalue.endswith(".xlsx"):
-                self.add_excel(tablevalue)
-            else:
-                if tablevalue.endswith(".csv"):
-                    self.add_pandaframe(pd.read_csv(tablevalue), tablename)
-                elif tablevalue.endswith(".json"):
-                    self.add_pandaframe(pd.read_json(tablevalue), tablename)
-                elif tablevalue.endswith(".pkl"):
-                    self.add_pandaframe(pd.read_pkl(tablevalue), tablename)
-        elif isinstance(tablevalue,pd.DataFrame):
-            self.dataframes[tablename] = tablevalue
-
-        if just_enter:
-            self.exit()
-    
-
-    def __iadd__(self, path):
-        self["temp"] = path
-        return self
-
-        
 
 class ticktick(object):
     def __init__(self,clientid,clientsecret,user,pwd,uri='http://127.0.0.1:8085'):
@@ -1258,6 +1286,127 @@ class xcyl(object):
         self.addr(sheet_name,dataframe)
     def sanity(self):
         return True
+
+
+class xcylr(object):
+	"""
+	the new excel object
+	"""
+	def __init__(self, filename: str = "TEMP_VALUE", useIndex: bool = False):
+		if not filename.endswith(".xlsx"):
+			filename += ".xlsx"
+		self.filename = filename
+		self.cur_data_sets = {}
+		self.useIndex = useIndex
+
+		if os.path.exists(self.filename):
+			print("Loading existing file")
+			print("[", end='', flush=True)
+			for sheet_name in load_workbook(self.filename, read_only=True, keep_links=False).sheetnames:
+				print(self.filename+"_"+sheet_name)
+				self.cur_data_sets[self.filename+"_"+sheet_name] = pd.read_excel(self.filename, engine="openpyxl", sheet_name=sheet_name)
+				print(".", end='', flush=True)
+			print("]")
+
+	def __enter__(self):
+		return self
+
+	def close(self):
+		from copy import deepcopy as dc
+		if os.path.exists(self.filename):
+			os.system("mv {} {}".format(self.filename, self.filename.replace(".xlsx", "_backup.xlsx")))
+
+		try:
+			keys, sheet_names, temp_name = list(self.cur_data_sets.keys()), [], "gen_name"
+			for itr, key in enumerate(keys):
+				og_sheet_name, final_sheet_name = key, key
+				if len(key) > 20:
+					self[temp_name+"_"+str(itr)] = dc(self[key])
+					del self[key]
+					final_sheet_name = temp_name+"_"+str(itr)
+
+				sheet_names += [{
+					"og_sheet_name": og_sheet_name,
+					"final_sheet_name": final_sheet_name
+				}]
+
+			def dyct_frame(raw_dyct):
+				dyct = dc(raw_dyct)
+				for key in list(raw_dyct.keys()):
+					dyct[key] = [dyct[key]]
+				return pd.DataFrame.from_dict(dyct)
+
+			self['sheet_names'] = pd.concat(list(map(
+				dyct_frame,
+				sheet_names
+			)), ignore_index=True)
+
+			with pd.ExcelWriter(self.filename, engine="xlsxwriter") as writer:
+				for key, value in self.cur_data_sets.items():
+					value.to_excel(writer, sheet_name=key, startrow=1, header=False, index=self.useIndex)
+					worksheet = writer.sheets[key]
+					(max_row, max_col) = value.shape
+					worksheet.add_table(0, 0, max_row, max_col - 1, {'columns': [{'header': column} for column in value.columns]})
+					worksheet.set_column(0, max_col - 1, 12)
+		except Exception as e:
+			print("Exception :> {}".format(e))
+			for key, value in self.cur_data_sets.items():
+				value.to_csv(str(key) + ".csv")
+
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		self.close()
+		return self
+
+	def addr(self, sheet_name, dataframe):
+		while sheet_name in list(self.cur_data_sets.keys()):
+			sheet_name += "_"
+		self.cur_data_sets[sheet_name] = dataframe
+		return self
+
+	def add_frame(self, sheet_name, dataframe):
+		self.addr(sheet_name, dataframe)
+
+	def add_file(self, foil):
+		if foil.endswith(".xlsx") and os.path.isfile(foil):
+			with xcylr(foil) as x:
+				for key, value in x.items():
+					self.add_frame(key, value)
+		elif foil.endswith(".csv") and os.path.isfile(foil):
+			self.add_frame(foil, pd.read_csv(foil))
+		elif foil.endswith(".json") and os.path.isfile(foil):
+			self.add_frame(foil, pd.read_json(foil))
+
+	def __iadd__(self, dataframe):
+		if isinstance(dataframe, pd.DataFrame):
+			self.add_frame("Addon", dataframe)
+		else:
+			print("The object is not a dataframe")
+		return self
+
+	def keys(self):
+		return self.cur_data_sets.keys()
+
+	def values(self):
+		return self.cur_data_sets.values()
+
+	def items(self):
+		return self.cur_data_sets.items()
+
+	def __getitem__(self, item):
+		return self.cur_data_sets[item]
+
+	def __setitem__(self, key, value):
+		self.add_frame(key, value)
+
+	def __delitem__(self, key):
+		if key in self.keys():
+			del self.cur_data_sets[key]
+
+	def __iter__(self):
+		return self.cur_data_sets.__iter__()
+
+	def sanity(self):
+		return True
 
 def grab_sheet(sheet_name:str='',file_name:str='RawResults.xlsx'):
     import pandas as pd;from openpyxl import load_workbook
