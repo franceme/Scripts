@@ -892,6 +892,24 @@ class SqliteConnect(object):
 			self.exit()
 
         return output
+    
+    def read_query(self, table_name, query):
+		just_enter, output = False, None
+		if self.exists is None:
+			just_enter = True
+            self.just_enter()
+        
+        current_cursor = self.connection.cursor()
+        current_cursor.execute(query)
+
+        output = dc(current_cursor.fetchall())
+
+        current_cursor = None
+
+		if just_enter:
+			self.exit()
+
+        return output
 
 
 class ticktick(object):
