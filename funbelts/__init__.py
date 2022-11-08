@@ -1060,6 +1060,8 @@ class ephfile(object):
 		if contents:
 			if not isinstance(contents,list):
 				contents = [contents]
+		elif isinstance(contents,str):
+			contents = contents.split('\n')
 			for cont in contents:
 				contz = self.contents_lambda(cont)
 				if self.named:
@@ -1071,11 +1073,13 @@ class ephfile(object):
 	@property
 	def contents(self):
 		with open(self.foil,'r') as reader:
-			return '\n'.join(reader.readlines())
+			return ''.join(reader.readlines())
 
 	def __iadd__(self,contents):
 		if not isinstance(contents,list):
 			contents = [contents]
+		elif isinstance(contents,str):
+			contents = contents.split('\n')
 
 		contz = '\n'.join([self.contents_lambda(x) for x in contents])
 		if self.named:
