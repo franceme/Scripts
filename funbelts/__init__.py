@@ -691,24 +691,6 @@ class loggme(object):
 	def __iadd__(self, string=None):
 		self.log(string)
 
-class framearr(object):
-	def __init__(self, dataframe, output=None):
-		self.frame = dataframe
-		self.array = pd_to_arr(dataframe)
-		self.output = output
-
-	@property
-	def arr(self):
-		return self.array
-
-	def __enter__(self):
-		return self
-
-	def __exit__(self, exc_type, exc_val, exc_tb):
-		self.frame = arr_to_pd(self.array)
-		self.output = dc(dataframe)
-		return self
-
 class SqliteConnect(object):
 	"""
 	Sample usage:
