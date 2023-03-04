@@ -691,6 +691,19 @@ class loggme(object):
 	def __iadd__(self, string=None):
 		self.log(string)
 
+class framearr(object):
+	def __init__(self, dataframe):
+		self.array = pd_to_arr(dataframe)
+
+	def __call__(self):
+		return self.array
+
+	def __enter__(self):
+		return self
+
+	def __exit__(self, exc_type, exc_val, exc_tb):
+		dataframe = arr_to_pd(self.array)
+		return self
 
 class SqliteConnect(object):
 	"""
