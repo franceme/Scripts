@@ -144,6 +144,15 @@ def hash(file,hashfunc=hashlib.sha512()):
 def prep_scholar(query):
 	return f"https://scholar.google.com/scholar?hl=en&q={'+'.join(query.split(' '))}"
 
+def find_bib_variables(long_string):
+    bib_pattern = r"([A-Z]+) := ([A-Za-z0-9+/=]+)"
+    matches = re.findall(bib_pattern, long_string)
+    bib_variables = []
+    for match in matches:
+		if match[0] == 'BIB':
+        	bib_variables.append(match[1])
+    return bib_variables
+
 def mindmeistertojson(input_file_path):
 	"""
 	Shamelessly pulled from https://github.com/roeland-frans/mindmeister-csv
@@ -179,7 +188,20 @@ def mindmeistertojson(input_file_path):
 		current_node["parent"]= str(parent_name).replace('//','/')
 
 		temp_node = dc(current_node)
-		temp_node['tags'] = ' '.join(set(part[1:] for part in temp_node['note'].split() if part.startswith('#')))
+		try:
+			temp_node['tags'] = ' '.join(set(part[1:] for part in temp_node['note'].split() if part.startswith('#')))
+		except:
+			temp_node['tags'] = ''
+
+		if temp_node['note'].strip() != '':
+			try:
+				bibz = find_bib_variables(temp_node['note'].strip())
+				if len(bibz) >= 1:
+					temp_node['bib64'] = bibz[0]
+			except:
+				temp_node['bib64'] = None
+		else:
+			temp_node['bib64'] = None
 
 		for key,value in temp_node.items():
 			temp_node[key] = str(value).replace(",",";").replace(',',';').strip().replace('\n',' ').replace('\r',' ').strip()
