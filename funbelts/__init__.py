@@ -177,6 +177,8 @@ def mindmeistertojson(input_file_path):
 
 		temp_node = dc(current_node)
 		temp_node["children"] = None
+		for value in temp_node.values():
+			value = value.replace(",",";")
 		container_list.append(temp_node)
 
 		if "children" in current_node:
