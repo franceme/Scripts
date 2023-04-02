@@ -179,7 +179,7 @@ def mindmeistertojson(input_file_path):
 		temp_node['tags'] = ' '.join(set(part[1:] for part in temp_node['note'].split() if part.startswith('#')))
 
 		for key,value in temp_node.items():
-			temp_node[key] = str(value).replace(",",";").replace(',',';').strip().replace('\n',';').replace('\r','').strip()
+			temp_node[key] = str(value).replace(",",";").replace(',',';').strip().replace('\n',' ').replace('\r',' ').strip()
 
 		for key in ['children','style','pos','property','task']:
 			del temp_node[key]
