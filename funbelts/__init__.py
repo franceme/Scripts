@@ -172,14 +172,37 @@ def mindmeistertojson(input_file_path):
 	except ValueError   as e:
 		raise ExtractorError("Could not load the MindMeister map file, is this a correct .mind file?")
 
+	def setting_parent(parent_name, current_node, container_list=[]):
+		current_node["parent"]= parent_name
+
+		temp_node = dc(current_node)
+		temp_node["children"] = None
+		container_list.append(temp_node)
+
+		if "children" in current_node:
+			for child in current_node["children"]:
+				child["parent"] = parent_name
+				for x in setting_parent(parent_name+"/"+current_node['title'], child, container_list):
+					#container_list.append(x)
+					pass
+		return container_list
+
+	full_lists = setting_parent("/", data['root'], [])
+
 	with open(input_file_path.replace(".mind",".json"),"w+") as writer:
-		#current_data = str(data)
-		#current_data = current_data.replace('"','').replace("'",'"').replace("None","null").replace("True","true").replace("False","false").replace('https://','').replace('http://','')
-		#writer.write(current_data)
+		json.dump(data,writer)
+
+	candas = arr_to_pd(full_lists)
+	candas.to_csv(input_file_path.replace(".mind",".csv"), index=False)
+
+	with open(input_file_path.replace(".mind",".json"),"w+") as writer:
 		json.dump(data, writer)
 
 	input_file.close()
-	return data
+	return {
+		"raw":data,
+		"frame":candas,
+	}
 
 class all_langs(object):
 	"""
