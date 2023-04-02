@@ -1,5 +1,5 @@
 from __future__ import print_function
-import os, sys, pwd, json, pandas as pd, numpy as np, sqlite3, pwd, uuid, platform, re, base64, string,enum,shelve
+import os, sys, pwd, json, pandas as pd, numpy as np, shutil, zipfile, sqlite3, tempfile, pwd, uuid, platform, re, base64, string,enum,shelve
 import matplotlib as mpl
 import matplotlib.cm
 import requests
@@ -140,6 +140,45 @@ def hash(file,hashfunc=hashlib.sha512()):
 				break
 			hashfunc.update(data)
 	return str(hashfunc.hexdigest())
+
+def mindmeistertojson(input_file_path):
+	"""
+	Shamelessly pulled from https://github.com/roeland-frans/mindmeister-csv
+	"""
+	temp_dir = tempfile.gettempdir()
+	dest_dir = os.path.join(temp_dir, 'mindmeister')
+
+	with zipfile.ZipFile(input_file_path) as zip_file:
+		for member in zip_file.infolist():
+			# Path traversal defense copied from
+			# http://hg.python.org/cpython/file/tip/Lib/http/server.py#l789
+			words = member.filename.split('/')
+			path = dest_dir
+			for word in words[:-1]:
+				drive, word = os.path.splitdrive(word)
+				head, word = os.path.split(word)
+				if word in (os.curdir, os.pardir, ''): continue
+				path = os.path.join(path, word)
+			zip_file.extract(member, path)
+
+	try:
+		input_file = open(os.path.join(dest_dir, 'map.json'))
+	except IOError as e:
+		shutil.rmtree(dest_dir)
+		return
+
+	try:
+		data = json.load(input_file)
+	except ValueError   as e:
+		raise ExtractorError("Could not load the MindMeister map file, is this a correct .mind file?")
+
+	with open(input_file_path.replace(".mind",".json"),"w+") as writer:
+		current_data = str(data)
+		current_data = current_data.replace('"','').replace("'",'"').replace("None","null").replace("True","true").replace("False","false").replace('https://','').replace('http://','')
+		writer.write(current_data)
+
+	input_file.close()
+	return data
 
 class all_langs(object):
 	"""
