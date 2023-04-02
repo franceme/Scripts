@@ -173,7 +173,7 @@ def mindmeistertojson(input_file_path):
 		raise ExtractorError("Could not load the MindMeister map file, is this a correct .mind file?")
 
 	def setting_parent(parent_name, current_node, container_list=[]):
-		current_node["parent"]= parent_name
+		current_node["parent"]= str(parent_name).replace('//','/')
 
 		temp_node = dc(current_node)
 		temp_node['tags'] = ' '.join(set(part[1:] for part in temp_node['note'].split() if part.startswith('#')))
