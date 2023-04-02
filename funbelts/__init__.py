@@ -173,9 +173,10 @@ def mindmeistertojson(input_file_path):
 		raise ExtractorError("Could not load the MindMeister map file, is this a correct .mind file?")
 
 	with open(input_file_path.replace(".mind",".json"),"w+") as writer:
-		current_data = str(data)
-		current_data = current_data.replace('"','').replace("'",'"').replace("None","null").replace("True","true").replace("False","false").replace('https://','').replace('http://','')
-		writer.write(current_data)
+		#current_data = str(data)
+		#current_data = current_data.replace('"','').replace("'",'"').replace("None","null").replace("True","true").replace("False","false").replace('https://','').replace('http://','')
+		#writer.write(current_data)
+		json.dump(data, writer)
 
 	input_file.close()
 	return data
