@@ -181,7 +181,7 @@ def mindmeistertojson(input_file_path):
 		for value in temp_node.values():
 			value = str(value).replace(",",";")
 
-		for key in ['style','pos','property']:
+		for key in ['style','pos','property','task']:
 			del temp_node[key]
 
 		container_list.append(temp_node)
