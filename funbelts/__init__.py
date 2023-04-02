@@ -179,7 +179,7 @@ def mindmeistertojson(input_file_path):
 		temp_node["children"] = None
 
 		for key,value in temp_node.items():
-			temp_node[key] = str(value).replace(",",";").replace(',',';')
+			temp_node[key] = str(value).replace(",",";").replace(',',';').strip().replace('\n',';').replace('\r','').strip()
 
 		for key in ['style','pos','property','task']:
 			del temp_node[key]
