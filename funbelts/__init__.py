@@ -141,6 +141,9 @@ def hash(file,hashfunc=hashlib.sha512()):
 			hashfunc.update(data)
 	return str(hashfunc.hexdigest())
 
+def prep_scholar(query):
+	return f"https://scholar.google.com/scholar?hl=en&q={'+'.join(query.split(' '))}"
+
 def mindmeistertojson(input_file_path):
 	"""
 	Shamelessly pulled from https://github.com/roeland-frans/mindmeister-csv
