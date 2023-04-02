@@ -211,50 +211,50 @@ class all_langs(object):
 	Shamelessly pulled from 
 	https://stackoverflow.com/questions/24593109/list-of-all-programming-languages-in-select-field
 	"""
-    def __init__(self):
-        self.lang_list = None
+	def __init__(self):
+		self.lang_list = None
 
-    @property
-    def langs(self):
-        if self.lang_list != None:
-            return self.lang_list
+	@property
+	def langs(self):
+		if self.lang_list != None:
+			return self.lang_list
 
-        import urllib
-        from urllib.request import urlopen
-        response = urllib.request.urlopen('http://en.wikipedia.org/wiki/List_of_programming_languages')
-        html = response.read()
+		import urllib
+		from urllib.request import urlopen
+		response = urllib.request.urlopen('http://en.wikipedia.org/wiki/List_of_programming_languages')
+		html = response.read()
 
-        #Parse it with beautifulsoup
-        from bs4 import BeautifulSoup
-        soup = BeautifulSoup(html)
+		#Parse it with beautifulsoup
+		from bs4 import BeautifulSoup
+		soup = BeautifulSoup(html)
 
-        self.lang_list = []
-        start_reject = False
-        #Parse all the links.
-        for link in soup.find_all('a'):
-            #Last link after ZPL, the last language.
-            if link.get_text() == u'Top':
-                break
-            if link.get_text() == u'edit':
-                pass
-            else:
-                cur_link = link.get_text()
-                if cur_link != '' and cur_link.strip() != '':
-                    cur_link = cur_link.strip()
-                    if not start_reject:
-                        if "(" in cur_link:
-                            cur_link = cur_link.split("(")[0]
+		self.lang_list = []
+		start_reject = False
+		#Parse all the links.
+		for link in soup.find_all('a'):
+			#Last link after ZPL, the last language.
+			if link.get_text() == u'Top':
+				break
+			if link.get_text() == u'edit':
+				pass
+			else:
+				cur_link = link.get_text()
+				if cur_link != '' and cur_link.strip() != '':
+					cur_link = cur_link.strip()
+					if not start_reject:
+						if "(" in cur_link:
+							cur_link = cur_link.split("(")[0]
 
-                        self.lang_list.append(cur_link)
+						self.lang_list.append(cur_link)
 
-                        start_reject = start_reject or cur_link == "Z++"
+						start_reject = start_reject or cur_link == "Z++"
 
-        # find u'See also'
-        see_also_index_ = self.lang_list.index(u'See also')
-        # strip out headers
-        self.lang_list = self.lang_list[see_also_index_+1:]
+		# find u'See also'
+		see_also_index_ = self.lang_list.index(u'See also')
+		# strip out headers
+		self.lang_list = self.lang_list[see_also_index_+1:]
 
-        return self.lang_list
+		return self.lang_list
 
 	@staticmethod
 	def get_list():
