@@ -145,13 +145,13 @@ def prep_scholar(query):
 	return f"https://scholar.google.com/scholar?hl=en&q={'+'.join(query.split(' '))}"
 
 def find_bib_variables(long_string):
-    bib_pattern = r"([A-Z]+) := ([A-Za-z0-9+/=]+)"
-    matches = re.findall(bib_pattern, long_string)
-    bib_variables = []
-    for match in matches:
+	bib_pattern = r"([A-Z]+) := ([A-Za-z0-9+/=]+)"
+	matches = re.findall(bib_pattern, long_string)
+	bib_variables = []
+	for match in matches:
 		if match[0] == 'BIB':
-        	bib_variables.append(match[1])
-    return bib_variables
+			bib_variables.append(match[1])
+	return bib_variables
 
 def mindmeistertojson(input_file_path):
 	"""
