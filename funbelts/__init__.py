@@ -377,11 +377,11 @@ def str_to_base64(string, password:bool=False, encoding:str='utf-8'):
 	return (current.decode(encoding), key)
 
 def base64_to_str(b64, password:str=None, encoding:str='utf-8'):
-	 if password:
-		 current = Fernet(password.encode(encoding)).decrypt(b64.encode(encoding)).decode(encoding)
+	if password:
+		current = Fernet(password.encode(encoding)).decrypt(b64.encode(encoding)).decode(encoding)
 	else:
 		current = None
-	 return base64.b64decode(current or b64).decode(encoding)
+	return base64.b64decode(current or b64).decode(encoding)
 
 def silent_exec(default=None, returnException:bool=False):
 	"""
