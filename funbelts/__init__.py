@@ -379,6 +379,8 @@ def str_to_base64(string, password:bool=False, encoding:str='utf-8'):
 def base64_to_str(b64, password:str=None, encoding:str='utf-8'):
 	 if password:
 		 current = Fernet(password.encode(encoding)).decrypt(b64.encode(encoding)).decode(encoding)
+	else:
+		current = None
 	 return base64.b64decode(current or b64).decode(encoding)
 
 def silent_exec(default=None, returnException:bool=False):
