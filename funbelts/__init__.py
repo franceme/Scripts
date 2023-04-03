@@ -193,15 +193,13 @@ def mindmeistertojson(input_file_path):
 		except:
 			temp_node['tags'] = ''
 
-		if temp_node['note'].strip() != '':
-			try:
+		temp_node['bib64'] = None
+		try:
+			if temp_node['note'].strip() != '':
 				bibz = find_bib_variables(temp_node['note'].strip())
 				if len(bibz) >= 1:
 					temp_node['bib64'] = bibz[0]
-			except:
-				temp_node['bib64'] = None
-		else:
-			temp_node['bib64'] = None
+		except:pass
 
 		for key,value in temp_node.items():
 			temp_node[key] = str(value).replace(",",";").replace(',',';').strip().replace('\n',' ').replace('\r',' ').strip()
